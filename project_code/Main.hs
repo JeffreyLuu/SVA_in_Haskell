@@ -10,8 +10,8 @@ import Control.Exception
 import System.IO
 import System.IO.Error
 
-inputFileName = "svaexamples/bakery1/bakery.svl"
--- inputFileName = "svaexamples/bakery1/bakerysimp.svl"
+-- inputFileName = "svaexamples/bakery1/bakery.svl"
+inputFileName = "svaexamples/bakery1/bakerysimp.svl"
 -- inputFileName = "svaexamples/bakery1/bakerysimp2.svl" -- does not support calling another thread in one thread
 
 -- inputFileName = "svaexamples/bakery2/bakery2.svl" -- longer compilation time for D
