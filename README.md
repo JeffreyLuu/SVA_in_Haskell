@@ -6,7 +6,7 @@ To compile the program, go to /project_code directory and run the following comm
 ghc Main.hs -odir compilation/ -hidir compilation/
 
 To run the program to get the compiled result, run the following command:
-./Main 
+```./Main ```
 or run the following to output the compilation result into output.csp:
 ./Main > example/output.csp
 
