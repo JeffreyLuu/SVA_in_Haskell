@@ -1,0 +1,179 @@
+
+
+
+//bakeryproof3.svl
+
+//Bill Roscoe
+
+//See Sect 19.6.2 of UCS
+
+//Completing the proof of the bakery algorithm -- simulating dirty
+//ticket variables.
+
+// As discussed in the text, the fact that bakeryproof2.svl
+// makes all assignments to number[2] and number[4] atomic means
+// that this nullifies any decision to make them dirty.
+
+// In this file we simulate the effects of a dirty write directly
+// within the code: each time a thread writes to either of these
+// locations it writes random values an arbitrary number of times first.
+
+
+%%ext_atomic=false
+%%MinI = 0
+%%MaxI = 9
+%%InitB = false
+%%InitI = MinI
+%%ditype = {2,4}
+%%dctype = {MinI..MaxI}
+
+sig css : int, cse : int;
+
+//Number variables here are clean because the model of
+//managing the partial order does not respect dirty ones.
+
+bool randb;
+int[] number;
+int randi;
+int[] temp;
+bool[10] hits;
+int[10] omap;
+dirty bool[] choosing;
+const N = 5;
+
+// The treatment of the values in thread
+ParWrites = {randi,randb}
+
+// Note that in this program we maintain a separation between
+// integer variables (used as loop counters) and variables varying
+// over the ticket type (temp[], number[])
+
+
+// We have converted the original program into atomic equivalent
+// in respect of the shared variables of ticket type, as discussed
+// in the book.  Note that number[] are shared between threads, whereas
+// the temp[] are local though maintained by the overseer.
+
+
+// The modifications to the following code from bakeryproof2.svl are
+// the insertion of the lines marked //*.  These precisely simulate
+// the following assignments to the number[i] being dirty.
+// In the cases where the assignment depends on the value being written,
+// the right value of the assignment is calculated first and stored
+// in temp[i].
+
+PP(i) = iter
+{
+    int j,t;
+    bool b;
+    choosing[i] := true;
+    j := 1;
+    while j <= N do
+      {if j%2=0  then 
+                   {if i!=j then {atomic temp[i] := number[j];
+                                  //atomic temp[i] := max(temp[i],number[i]);
+                                  while randb do atomic number[i] := randi; //*
+                                  //atomic number[i] := temp[i]}}
+                                  atomic number[i] := max(number[i],temp[i])}}
+                else
+                while randb do
+                   {
+                    //atomic temp[i] := max(number[i],randi);
+                    while randb do atomic number[i] := randi; //*
+                    //atomic number[i] := temp[i]};
+                    atomic number[i] := max(number[i],randi)};
+       j := j+1};
+    //atomic {if number[i] < 8 then
+    //           if randb then temp[i] := number[i] + 1
+    //                    else temp[i] := number[i] + 2
+    //           else temp[i] := number[i]+1};
+    while randb do atomic number[i] := randi; //*
+    atomic {if number[i] < 8 then
+               if randb then number[i] := number[i] + 1
+                        else number[i] := number[i] + 2
+               else number[i] := number[i]+1};
+    //atomic number[i] := temp[i];
+    choosing[i] := false;
+    j := 1;
+    while (j <= N) do
+    {if j%2=1 then
+      while randb do
+	{	while randb do skip;
+		if (j < i) then
+                        {atomic b := randi > 0 && number[i]>= randi;
+			while b do atomic b := randi > 0 && number[i]>= randi};
+		if (i < j) then
+                        {atomic b := randi > 0 && number[i]>randi;
+			while b do atomic b := randi > 0 && number[i]>randi};
+	} 
+      else
+	{     while choosing[j] do skip;
+		if (j < i) then
+                       {atomic temp[i] := number[j];
+                        atomic {b := (temp[i] > 0) && (number[i] >= temp[i])};
+                        while b do 
+                              {atomic temp[i] := number[j];
+                              atomic b := temp[i] > 0 && number[i] >= temp[i]}};
+		if (j > i) then
+                       {atomic temp[i] := number[j];
+                        atomic b := temp[i] > 0 && number[i] > temp[i];
+			while b do 
+                               {atomic temp[i] := number[j];
+                               atomic b := temp[i] > 0 && number[i] > temp[i]};
+                                }};
+      j := j+1};
+   sig(css.i);
+   sig(cse.i);
+   while randb do atomic number[i] := randi;  
+   atomic number[i] := 0
+}
+
+Dummy() = skip with {randi,randb}
+
+
+
+%%SPEC = css?i -> cse!i -> SPEC
+
+
+// The overseer as explained in the book
+
+LO() =
+{
+int kk,nextw;
+hits[number[2]] := true;
+hits[number[4]] := true;
+hits[temp[2]] := true;
+hits[temp[4]] := true;
+nextw := 0;
+kk := 0;
+while kk<9 do
+  {kk := kk+1;
+   if hits[kk] then 
+     {
+      nextw := nextw+2;
+      omap[kk] := nextw;
+      hits[kk] := false;
+     }};
+number[2] := omap[number[2]];
+number[4] := omap[number[4]];
+temp[2] := omap[temp[2]];
+temp[4] := omap[temp[4]];
+kk := 0;
+while kk<9 do
+   {kk := kk+1;
+    omap[kk] := 0}
+}
+
+
+WideStructOS = hierarchCompress < PP(2),PP(4),Dummy(),overseer LO()>
+
+// The third check below -- not possible for any earlier
+// model of bakery -- shows that in this file there is no
+// overflow error.  It represents the overall proof.
+
+//assert %- STOP [T= WideStructOS \{|css,cse|} -% in WideStructOS
+//assert %- SPEC [T= WideStructOS \{|error,verror|} -% in WideStructOS
+assert %- SPEC [T= WideStructOS -% in WideStructOS
+
+// The optimisations of how the "other thread" variables are represented
+// create checks that are much faster to run than the authors earlier versions.

@@ -1,0 +1,72 @@
+// simpson3.svl
+// Simpson's 4-slot algorithm
+// This file shows how "write when different" can sure the
+// recent problem discovered in simpson2.svl
+
+
+%%ext_atomic=false
+%%MinI = 0
+%%MaxI = 4
+%%InitB = false
+%%InitI = 0
+%%ditype = {0,1}
+%%dctype = {0,1}
+%%LockOrder = <>
+%%CheckLockOrder = false
+
+dirty int[4] slot;
+dirty int[] index;
+
+dirty int reading,latest, rand;
+
+bool[] okread;
+int wval,lastw;
+
+sig wrongval;
+
+// The specification is the same as in simpson2.svl.
+// Three lines marked below have been modified to the
+// "Write when different" principle that a boolean is
+// only written when its value will change.
+
+// This makes the specification true.  But not all of this
+// transformation is necessary, as you can discover by experiment.
+
+Writer() = iter
+{
+    int wpair, windex, inp;
+    inp := rand%2;
+    wval := inp;
+    okread[wval] := true;
+    wpair := 1 - reading%2;
+    windex := 1 - index[wpair];
+    slot[2*wpair + windex] := wval;
+    if index[wpair]=windex then skip else index[wpair] := windex; //WWD
+    if latest=wpair then skip else latest := wpair;               //WWD
+    lastw := wval;
+}
+
+Reader() = iter
+{
+    int rpair, rindex, outp;
+    okread[0] := false;
+    okread[1] := false;
+    okread[wval] := true;
+    okread[lastw] := true;
+    rpair := latest%2;
+    if reading=rpair then skip else reading := rpair;  //WWD
+    rindex := index[rpair]%2;
+    outp := slot[2*rpair + rindex];
+    if okread[outp] then skip else sig(wrongval);
+}
+
+Rand() = iter {rand := 0}
+
+
+WideStruct = hierarchCompress <Rand(),Reader(),Writer()>
+
+
+
+
+assert %- STOP [T= WideStruct -% in WideStruct
+

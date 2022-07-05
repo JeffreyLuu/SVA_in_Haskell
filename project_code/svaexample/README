@@ -1,0 +1,36 @@
+This directory contains examples of input for SVA written in the SVL
+notation discussed in Chapters 18 and 19 of Understanding Concurrent
+Systems, and in one or two cases in the datatype variant of SVL that
+the compiler itself uses.
+
+Almost all of the examples are contained in, or referred to, in those
+chapters.
+
+The examples are contained in the following subdirectories, the order of
+which represents how they are covered in these two chapters.
+
+mutex  Basic mutual exclusion algorithms such as Peterson and Hyman, plus the
+       N-ary version of Peterson
+
+bakery1  Codings of the bakery algorithm relevant to Chapter 18
+
+svphils Shared variable dining philosophers
+
+dirty  Examination of some of the above examples in the context
+       of dirty variables
+
+simpson Analysis and development of Simpson's 4-slot algorothm
+
+refinement Illustrating the use of refinement relations between
+           shared variable programs, for example different Max algorithms
+
+bakery2  The result of varying the max algorithm in the bakery algorithm
+
+atomic-equiv  Illustrating the transformation to atomic equivalent programs
+
+overseers  Implementing complex data types using overseers
+
+bakery3    The proof of the bakery algorithm for arbitrary numbers of
+           threads and tickets.
+
+If you have any problems with these please let Bill Roscoe know.

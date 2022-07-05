@@ -1,0 +1,99 @@
+
+
+
+//lq.svl
+//Illustrating the use of overseers to create a datatype
+//conventional queue
+
+//One of the most interesting things about this file is that
+//compression is disasterous to use because of the size of
+//the combination of the overseer and its variables including the
+//array.
+
+
+%%ext_atomic=false
+%%MinI = 0
+%%MaxI = 5
+%%InitB = false
+%%InitI = MinI
+%%ditype = {0..MaxI-1}
+%%dctype = {MinI..MaxI}
+
+bool addflag, removeflag;
+int adddata,removedata,size;
+const N = 4;
+int [] a;
+sig overfull,removefromempty;
+sig finished;
+sig error1,error2;
+
+
+LQ() = {int j;
+ if addflag then
+     if size=N then sig(overfull)
+          else {size := size+1;
+                a[size-1] := adddata;
+                if size = 1 then removedata := adddata;
+                addflag := false}
+ else if removeflag then
+         if size=0 then sig(removefromempty)
+         else {
+           j := 0;
+           while j<size do {a[j] := a[j+1]; j := j+1};
+           size := size-1;
+           if size > 0 then removedata := a[0];
+           removeflag := false}
+ else skip}
+
+// simple processes to add and remove data
+// same as in cq.svl
+
+Prod() = {while true do
+  if size < N then atomic{adddata := size; addflag := true}}
+
+Cons() = {int v;
+ bool f1,f2;
+ while true do
+  {if size > 0 then atomic{v := removedata; removeflag := true};
+   if removedata=N-1 then f1 := true;
+   if removedata=0 && f1 then f2:= true;
+   if f2 && removedata=N-1 then sig(finished)}}
+
+// So this process is meant to produce the finished signal:
+
+System =  <Cons(),Prod(),overseer LQ()>
+
+// processes that add and remove the infinite sequence  which repeats <0..0>^<1> (i 0s)
+
+Writer(i) = {int j; 
+iter{j := 0;
+     while j <i do
+       {if size < N then
+         {atomic{adddata := 0; addflag := true};
+          j := j+1}};
+      while size>=N do skip;
+      atomic{adddata := 1; addflag := true}}}
+
+Reader(i) = {int j,r; 
+bool going;
+iter{j := 0;going:=true;
+     while going do
+       {if size>0 then
+         { atomic{r := removedata; removeflag := true};
+          if r=0 then j := j+1
+               else if r=1 then {going:=false;
+                                 if j!=i then sig(error1)}
+                           else sig(error2)}}
+    }}
+
+
+// So the first of these should succeed, the second fail.
+
+System2 =  <Writer(4),Reader(4),overseer LQ()>
+System2a =  <Writer(4),Reader(3),overseer LQ()>
+
+assert %- STOP [T= System -% in System
+assert %- STOP [T= System2 -% in System2
+assert %- STOP [T= System2a -% in System2a
+
+

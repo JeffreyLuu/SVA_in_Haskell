@@ -1,0 +1,251 @@
+
+
+
+-- sdphils3.csp
+
+-- Dining philosophers implemented using an explicit mutex algorithm and
+-- shared variables.
+
+-- Version with analogue of butler, whose own accesses regulated by token ring.
+
+ext_atomic = false
+ExtReads = {}
+ExtWrites = {}
+DirtyVars = {}
+
+
+N = 3 -- The number of philosophers: 
+      -- Different checks in this file can manage different numbers.
+
+mostprocs = 2*N
+
+
+-- The following events signal some of the stages of a Phil, and are
+-- used in specifications.
+
+channel eats:{0..N-1}
+channel lget,lput,rget,rput:{0..N-1}
+
+Signals = {|eats,lget,rget,lput,rput|}
+ISignals = {}
+
+
+
+
+include "svacomp.csp"
+
+-- The following define type and initialisation parameters for the compiler.
+
+MinI = 0
+MaxI = N
+stypes = <>
+ditype = {0..N-1}
+dctype = {1,2}
+ctypes = <(IV.1,{MinI..MaxI}),(IV.2,{MinI..MaxI})>
+catypes = <>
+itypes = <>
+
+ivnums = {1,2}
+bvnums = {}
+ianums = {1}
+banums = {1,2,3,4}
+
+InitB = false
+
+init = (<>,<>)
+
+
+-- naming variables
+
+butler = IVar.IV.1
+token = IVar.IV.2
+t(i) =  IArc.(IA.1,Const.i) 
+bl = let f(i) = BArc.(BA.1,Const.i) within f
+br = let f(i) = BArc.(BA.2,Const.i) within f
+
+waiting = let f(i) = BArc.(BA.3,Const.i) within f
+proceed = let f(i) = BArc.(BA.4,Const.i) within f
+
+-- The following routines define the actions of a philospher gaining/releasing
+-- the mutex with its left/right hand neighbour: when it has a mutex it
+-- is deemed to have the corresponding fork.
+
+-- The mutex algorithm used here is Petersen's.
+
+lgetmx(i) = SQ.(<
+                  bassign(bl(i),True),
+                  iassign(t(i),Const.2),
+                  While.(BBOp.And.br(i).(CompOp.Eq.t(i).Const.2), Skip),
+                  Sig.(lget.i)>)
+
+lrelmx(i) =   SQ.(<bassign(bl(i),False),Sig.(lput.i)>)
+
+rgetmx(i) = SQ.(<
+                  bassign(br(i),True),
+                  iassign(t(i),Const.1),
+                  While.(BBOp.And.bl(i).(CompOp.Eq.t(i).Const.1), Skip),
+                  Sig.(rget.i)>)
+
+rrelmx(i) =   SQ.(<bassign(br(i),False),Sig.(rput.i)>)
+
+
+-- The file sdphils2.csp shows we cannot allow the variable butler to
+-- be accessed arbitrarily by the nodes.  The following approach uses
+-- a mutex based on a token ring.  So here each of these operations is
+-- guarded by the butler's mutex.  If the test of butler is removed
+-- from the CS, then the AlwaysPossible chack fails.
+
+sit(i) = SQ.<
+             GetCS(i),
+             While.(CompOp.Gt.butler.Const.(N-2),Skip),
+             iassign(butler,BIOp.Plus.butler.Const.1),
+             RelCS(i)>
+
+getup(i) = SQ.<GetCS(i),
+               iassign(butler,BIOp.Minus.butler.Const.1),
+               RelCS(i)>
+
+-- A token ring mutex node
+
+RingNode(i) = (Iter.SQ.<
+              While.(CompOp.Neq.token.Const.i, Skip),
+              Cond.(waiting(i),
+                    SQ.<bassign(proceed(i),True),
+                        While.(waiting(i),Skip),
+                        iassign(token,Const.((i+1)%N)),
+                        bassign(proceed(i),False)>,
+                    iassign(token,Const.((i+1)%N))
+                    )
+                    >, ({},{}))
+
+-- Relative to this we can define routines that grab and release this
+-- baton
+
+GetCS(i) = SQ.<While.(proceed(i),Skip),
+               bassign(waiting(i),True),
+               While.(Not.(proceed(i)),Skip)>
+
+RelCS(i) = bassign(waiting(i),False)
+
+CSTest(i) = Iter.SQ.<
+               GetCS(i),
+               Sig.css.i,
+               Sig.cse.i,
+               RelCS(i)
+               >
+
+
+
+
+LPhil(i) = Iter.(SQ.<sit(i),lgetmx(i),rgetmx((i+1)%N),Sig.eats.i,rrelmx((i+1)%N),lrelmx(i),getup(i)>)
+
+Phil(i) =  (LPhil(i),({},{}))
+
+-- System is a list of all thread processes (required by compiler)
+
+--System = <Phil(i),RingNode(i) | i <- <0..N-1>>
+System' = (<Phil(i),RingNode(i) | i <- <0..N-1>>,<>)
+
+
+-- The following set up respectively a balanced binary tree, a maximal-depth
+-- tree and a one-level tree representing the same network.
+
+Balanced(i,j) = if i==j then CSNode.<CSLeaf.Phil(i),CSLeaf.RingNode(i)>  
+                else let k = (i+j)/2 within 
+                         CSNode.<Balanced(i,k),Balanced(k+1,j)>
+
+LongTree(i,j) = if i==j then CSNode.<CSLeaf.Phil(i),CSLeaf.RingNode(i)>
+                else CSNode.<CSNode.<CSLeaf.Phil(i),CSLeaf.RingNode(i)>,LongTree(i+1,j)>
+
+BLongTree(i,j) = if i==j then CSNode.<CSLeaf.Phil(i),CSLeaf.RingNode(i)>
+                else CSNode.<CSNode.<CSLeaf.Phil(j),CSLeaf.RingNode(j)>,LongTree(i,j-1)>
+
+WideTree(i,j) = CSNode.<CSLeaf.Phil(k),CSLeaf.RingNode(k) 
+                        | k <- <i..j>>
+
+WideTree2(i,j) = CSNode.<CSNode.<CSLeaf.Phil(k),CSLeaf.RingNode(k)>
+                        | k <- <i..j>>
+
+-- The following are two ways of combining the phils without any compression
+
+Visible = union(Signals,Errors)
+
+BasicPhils = Compile(System')(Visible)
+BasicPhils2 = StructuredCompile(LongTree(0,N-1))(Visible)
+
+-- The following apply hierarchical compression to the three trees
+
+BalancedPhils = HierarchCompressedCompile(Balanced(0,N-1))(Visible)
+IndPhils = HierarchCompressedCompile(LongTree(0,N-1))(Visible)
+IndPhils2 = HierarchCompressedCompile(BLongTree(0,N-1))(Visible)
+WidePhils = HierarchCompressedCompile(WideTree(0,N-1))(Visible)
+WidePhils2 = HierarchCompressedCompile(WideTree2(0,N-1))(Visible)
+
+-- The following applies leaf compression: for any of the trees this should
+-- give the same number of states as WidePhils
+
+LCPhils = LeafCompressedStructuredCompile(LongTree(0,N-1))(Visible)
+
+-- The checks below test for error events 
+
+assert STOP [T= BasicPhils\Signals
+assert STOP [T= BalancedPhils\Signals
+assert STOP [T= LCPhils\Signals
+assert STOP [T= IndPhils\Signals
+assert STOP [T= IndPhils2\Signals
+assert STOP [T= WidePhils\Signals
+assert STOP [T= WidePhils2\Signals
+
+-- We now repeat some of the checks of sdphils.csp
+
+Eaten(0) = STOP
+Eaten(n) = eats?i -> if i == n-1 then Eaten(n-1)
+                     else Eaten(n)
+
+assert Eaten(N) [T= WidePhils2\diff(Events,{|eats|})
+
+channel tau,switch,succ
+
+
+AlwaysR(P,a) = let Sigma = diff(Events,{switch,tau,succ})
+                   Reg = [] x:Sigma @ x -> Reg
+                         [] switch -> Ph2
+                   Ph2 = succ -> Ph2
+               within
+                   ((P[|union({tau},Sigma)|] Reg)\{|tau|})[[succ <- a]]
+
+-- The above process allows P to perform any trace at all, after which
+-- the event switch causes it to stop, and Ph2 introduces an infinite trace
+-- of the event a.
+
+-- The process below also allows P to perform any trace followed by
+-- switch, but this time P is allowed to carry on with all events other than
+-- a hidden.  Thus this process can only perform an infinite trace of a's after
+-- switch if there is a trace of P beyond this point with an infinite number
+-- of a's in it.
+
+
+AlwaysL(P,a) = let Sigma = diff(Events,{switch,tau,succ,a})
+                   DP = P[[x <- tau, x <- x | x <- Sigma]]
+                   Reg = [] x:Sigma @ x -> Reg
+                         [] switch -> Ph2
+                   Ph2 = tau -> Ph2
+               within
+                   (normal(compress(DP))[|union({tau},Sigma)|] Reg)\{|tau|}
+
+
+-- Thus, for a P, 
+
+-- AlwaysL(P,a) [T= AlwaysR(P,a)
+
+-- if and only if P satisfies "after every trace s the event a is reachable"
+
+assert AlwaysL(IndPhils2,eats.0) [T= AlwaysR(WidePhils2,eats.0)
+
+Eats(0) = STOP 
+Eats(n) = eats?_ -> Eats(n-1)
+
+assert Eats(1) [T= (WidePhils\{|lget,rget|})\diff({|eats|},{eats.0})
+
+
+

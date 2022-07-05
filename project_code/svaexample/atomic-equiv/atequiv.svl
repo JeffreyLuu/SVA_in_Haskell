@@ -1,0 +1,99 @@
+
+// atequiv.sva
+// Bill Roscoe, October 2010
+
+// See Section 19.3
+
+// Simple example to show that one can find an atomic
+// equivalent program for a complex assignment.
+
+// To test equivalence we make all locations relevant to original
+// assignment visible, and ext_atomic true
+
+// We only test the refinements for small values of types, since this
+// check has an unexpectedly large state space.
+
+%%ext_atomic=true
+%%MinI = 0
+%%MaxI = 2
+%%InitB = false
+%%InitI = 0
+%%ditype = {0,1}
+%%dctype = {MinI..MaxI}
+
+int[] a;
+int x,y;
+
+ParReads = {x,y,a}
+ParWrites = {x,y,a}
+
+// A complex assignment
+
+PP() = {a[x+a[x+1]] := y+x*y}
+
+// The atomic equivalent without "atomic" construct from book
+// note corrected typo in LHS of last assignment.
+
+QQ() = {int lv1,lv2,lv3,lv4,lv5,lv6,lv7;
+        lv1 := x;
+        lv2 := lv1 + 1;
+        lv3 := a[lv2];
+        lv4 := lv1 + lv3;
+        lv5 := y;
+        lv6 := x;
+        lv7 := lv5 + lv6*lv5;
+        a[lv4] := lv7}
+
+// and with statements made atomic
+
+QQa() = {int lv1,lv2,lv3,lv4,lv5,lv6,lv7;
+        atomic lv1 := x;
+        atomic lv2 := lv1 + 1;
+        atomic lv3 := a[lv2];
+        atomic lv4 := lv1 + lv3;
+        atomic lv5 := y;
+        atomic lv6 := x;
+        atomic lv7 := lv5 + lv6*lv5;
+        atomic a[lv4] := lv7}
+
+// Here is a version optimised to a form where there is no more
+// than one access of a shared variable per statement, taking care
+// to keep cases where a single read is used more than once.
+
+RR() = {int lv1,lv4,lv5,lv7;
+        lv1 := x;
+        lv4 := lv1 + a[lv1+1];
+        lv5 := y;
+        lv7 := lv5 + x*lv5;
+        a[lv4] := lv7}
+
+RRa() = {int lv1,lv4,lv5,lv7;
+        atomic lv1 := x;
+        atomic lv4 := lv1 + a[lv1+1];
+        atomic lv5 := y;
+        atomic lv7 := lv5 + x*lv5;
+        atomic a[lv4] := lv7}
+
+// Try modifying these further and see what happens.
+
+
+// The state space of these checks is surprisingly large: hence the
+// rather small parameters such as MaxI in this file.
+// Note that each externally writable location can always take any value
+// at all no matter what the main process does.
+
+// The general refinement relation (see book)
+
+assert  PP() [G= QQ()
+assert  QQ() [G= PP()
+assert  QQ() [G= QQa()
+assert  QQa() [G= QQ()
+
+assert  PP() [G= RR()
+assert  RR() [G= PP()
+assert  RR() [G= RRa()
+assert  RRa() [G= RR()
+
+// We could of course prove the equivalence of QQ/QQa and RR/RRa by
+// comparing their individual statements.
+

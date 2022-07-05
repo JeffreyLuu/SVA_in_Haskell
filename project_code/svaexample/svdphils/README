@@ -1,0 +1,25 @@
+This directory contains versions of the dining philosophers with
+the forks replaced by explicit mutual exclusions over shared
+variables.  
+
+Many of the example files for SVA were originally written by the author
+in the CSP data type variant of the input language and then translated
+into more conventional SVL when this became available to use with the
+right version of the shared variable compiler.
+
+The files in this directory have been left in this format both to
+illustrate it and because, at the time of writing, SVL does not provide
+procedures of the form used in the CSP variant (and quoted
+under this example in the book).  The fact that they
+are OK in the CSP variant is simply through use of the ordinary
+structures of CSPM.
+
+The sort of procedures we mean are the named phases of the philosopher
+processes.
+
+They also differ in that Peterson's algorithm is used rather than Dekker,
+and the indexes of the mutex threads are 0,1 rather than 1,2.
+
+We will implement the book version of at least one of these files when
+SVL has procedures implemented.
+

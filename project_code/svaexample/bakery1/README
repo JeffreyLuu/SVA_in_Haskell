@@ -1,0 +1,10 @@
+This directory contains basic versions of the bakery algorithm
+and "simplified" bakery algorithms as described in Chapter 18.
+
+The reader is invited to experiment by changing it to see why various
+aspects of the algorithms are necessary to achieve mutual exclusion,
+what happens when the limit MaxI is changed, or the number of threads.
+
+It also provides a very striking illustration of how valuable the
+use of compression is for SVA.
+  

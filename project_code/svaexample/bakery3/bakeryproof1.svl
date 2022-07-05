@@ -1,0 +1,97 @@
+// bakeryproof1.svl
+// Bill Roscoe, October 2010
+
+// This file implements the first phase of the
+// proof of the bakery algorithm in Chapter 19, namely to show
+// that it preserves mutual exclusion for any pair of threads
+// irrespective of how many others there, how our pair are
+// arranged in terms of them, and however the others behave.
+
+%%ext_atomic=false
+%%MinI = 0
+%%MaxI = 8
+%%InitB = false
+%%InitI = MinI
+%%ditype = {2,4}
+%%dctype = {MinI..MaxI}
+
+sig css : int, cse : int;
+
+// This is the original bakery algoeithm, so we can
+// use dirty shared variables.
+
+bool randb;
+int randi;
+dirty int[] number;
+dirty bool[] choosing;
+
+// The reason for using 5 thread labels is explained
+// in the book.
+
+const N = 5;
+
+// "Threads" 1,3,5 become representatives of arbitrary
+// numbers of threads in the three gaps.  There are no
+// actual processes that  assign their array components:
+// we allow the environment to assign arbitrarily.  
+// One way of doing it would be to put the choosing[i] and number[i]
+// for odd i into ParWrites.  
+// But that still multiplies the state count by the possible values
+// of all these 6 locations.  It is much more efficient to have two:
+// a random integer and a random boolean which threads 2 and 4 always
+// use in place of number[i] and choosing[i] for i odd.
+// This is why the index type of arrays in this program is just {2,4}.
+
+ParWrites = {randi,randb}
+
+PP(i) = iter
+{
+    int j,acc;
+    choosing[i] := true;
+    j := 1;
+    acc := 0;
+    while j <= N do
+      {if j%2=0 then acc := max(acc, number[j])  // j is 2 or 4
+                else
+                while randb do // allow arbitrary number when 1,3,5
+                  {acc := max(acc,randi)};
+       j := j+1};
+    number[i] := acc + 1;
+    choosing[i] := false;
+    j := 1;
+    while (j <= N) do
+    {if j%2=1 then  // j = 1,3,5
+      while randb do
+	{	while choosing[j] do skip;
+		if (j < i) then
+			while randi > 0 && number[i] >= randi do skip;
+		if j > i then
+			while randi > 0 && number[i] > randi do skip;
+	} 
+      else  // j = 2,4
+	{	while choosing[j] do skip;
+		if (j < i) then
+			while number[j] > 0 && number[i] >= number[j] do skip;
+		if j > i then
+			while number[j] > 0 && number[i] > number[j] do skip};
+      j := j+1};
+   sig(css.i);
+   sig(cse.i);
+   number[i] := 0
+}
+
+
+WideStruct = hierarchCompress <PP(2),PP(4)>
+
+
+%%SPEC = css?i -> cse!i -> SPEC
+
+
+
+// The first assertion demonstrates that the ticket
+// values can grow out of bounds, as in basic models.
+
+assert %- STOP [T= WideStruct \{|css,cse|} -% in WideStruct
+assert %- SPEC [T= WideStruct \{|error,verror|} -% in WideStruct
+
+

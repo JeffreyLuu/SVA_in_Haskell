@@ -1,0 +1,141 @@
+
+//bakeryproof2.svl
+//Completing the proof of the 
+
+
+%%ext_atomic=false
+%%MinI = 0
+%%MaxI = 9
+%%InitB = false
+%%InitI = MinI
+%%ditype = {2,4}
+%%dctype = {MinI..MaxI}
+
+sig css : int, cse : int;
+
+//Number variables here are clean because the model of
+//managing the partial order does not respect dirty ones.
+
+bool randb;
+int[] number;
+int randi;
+int[] temp;
+bool[10] hits;
+int[10] omap;
+dirty bool[] choosing;
+const N = 5;
+
+// The treatment of the values in thread
+ParWrites = {randi,randb}
+
+// Note that in this program we maintain a separation between
+// integer variables (used as loop counters) and variables varying
+// over the ticket type (temp[], number[])
+
+
+// We have converted the original program into atomic equivalent
+// in respect of the shared variables of ticket type, as discussed
+// in the book.  Note that number[] are shared between threads, whereas
+// the temp[] are local though maintained by the overseer.
+
+PP(i) = iter
+{
+    int j;
+    bool b;
+    choosing[i] := true;
+    j := 1;
+    while j <= N do
+      {if j%2=0  then 
+                   {if i!=j then {atomic temp[i] := number[j];
+                                 atomic number[i] := max(temp[i],number[i])}}
+                else
+                while randb do
+                   {atomic number[i] := max(number[i],randi)};
+       j := j+1};
+    atomic {if number[i] < 8 then
+               if randb then number[i] := number[i] + 1
+                        else number[i] := number[i] + 2
+               else number[i] := number[i]+1};
+    choosing[i] := false;
+    j := 1;
+    while (j <= N) do
+    {if j%2=1 then
+      while randb do
+	{	while randb do skip;
+		if (j < i) then
+                        {atomic b := randi > 0 && number[i]>= randi;
+			while b do atomic b := randi > 0 && number[i]>= randi};
+		if (i < j) then
+                        {atomic b := randi > 0 && number[i]>randi;
+			while b do atomic b := randi > 0 && number[i]>randi};
+	} 
+      else
+	{     while choosing[j] do skip;
+		if (j < i) then
+                       {atomic temp[i] := number[j];
+                        atomic {b := (temp[i] > 0) && (number[i] >= temp[i])};
+                        while b do 
+                              {atomic temp[i] := number[j];
+                              atomic b := temp[i] > 0 && number[i] >= temp[i]}};
+		if (j > i) then
+                       {atomic temp[i] := number[j];
+                        atomic b := temp[i] > 0 && number[i] > temp[i];
+			while b do 
+                               {atomic temp[i] := number[j];
+                               atomic b := temp[i] > 0 && number[i] > temp[i]};
+                                }};
+      j := j+1};
+   sig(css.i);
+   sig(cse.i);
+   atomic number[i] := 0
+}
+
+Dummy() = skip with {randi,randb}
+
+
+
+%%SPEC = css?i -> cse!i -> SPEC
+
+
+// The overseer as explained in the book
+
+LO() =
+{
+int kk,nextw;
+hits[number[2]] := true;
+hits[number[4]] := true;
+hits[temp[2]] := true;
+hits[temp[4]] := true;
+nextw := 0;
+kk := 0;
+while kk<9 do
+  {kk := kk+1;
+   if hits[kk] then 
+     {
+      nextw := nextw+2;
+      omap[kk] := nextw;
+      hits[kk] := false;
+     }};
+number[2] := omap[number[2]];
+number[4] := omap[number[4]];
+temp[2] := omap[temp[2]];
+temp[4] := omap[temp[4]];
+kk := 0;
+while kk<9 do
+   {kk := kk+1;
+    omap[kk] := 0}
+}
+
+
+WideStructOS = hierarchCompress < PP(2),PP(4),Dummy(),overseer LO()>
+
+// The third check below -- not possible for any earlier
+// model of bakery -- shows that in this file there is no
+// overflow error.  It represents the overall proof.
+
+assert %- STOP [T= WideStructOS \{|css,cse|} -% in WideStructOS
+assert %- SPEC [T= WideStructOS \{|error,verror|} -% in WideStructOS
+assert %- SPEC [T= WideStructOS -% in WideStructOS
+
+// The optimisations of how the "other thread" variables are represented
+// create checks that are much faster to run than the authors earlier versions.

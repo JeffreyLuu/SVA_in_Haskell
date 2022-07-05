@@ -1,0 +1,55 @@
+// simpson.svl
+// Simpson's 4-slot algorithm for SVA
+// Bill Roscoe
+
+//This file demonstrates that Simpson's algorithm achieves clean reads
+// of the slots even in the presence of dirty flag variables
+
+%%ext_atomic=false
+%%MinI = 0
+%%MaxI = 4
+%%InitB = false
+%%InitI = 0
+%%ditype = {0,1}
+%%dctype = {0,1}
+%%LockOrder = <>
+%%CheckLockOrder = false
+
+dirty int[4] slot;
+dirty int[] index;
+
+dirty int reading,latest;
+
+sig collision;
+
+Writer() = iter
+{
+
+    int wpair, windex, inp, wval;
+    wval := inp;           // this value is always 0
+    wpair := 1 - reading%2;   // %2 is to make dirty integers into bits
+    windex := 1 - index[wpair]%2;
+    slot[2*wpair + windex] := wval;
+    index[wpair] := windex;
+    latest := wpair;
+}
+
+Reader() = iter
+{
+    int rpair, rindex, outp;
+    rpair := latest%2;
+    reading := rpair;
+    rindex := index[rpair]%2;
+    outp := slot[2*rpair + rindex];
+    if outp = 1 then sig(collision); // flag raised if result
+                                     // of dirty write read.
+}
+
+
+WideStruct = hierarchCompress <Reader(),Writer()>
+
+
+
+
+assert %- STOP [T= WideStruct -% in WideStruct
+

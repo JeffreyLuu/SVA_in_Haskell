@@ -1,0 +1,85 @@
+// petersonN.svl
+
+// The N-ary version of Peterson's mutual exclusion algorithm
+// (taken from an article in Wikipedia)
+
+// Bill Roscoe
+
+// This illustrates an algorithm which grows in complexity
+// rapidly with N 
+
+// A good benchmark for SVA, though for larger N it is better
+// to run FDR on exported CSP so you have something more exciting to
+// watch!  This also gives you an idea of the breakdown between
+// compression and running in FDR, which is very different in
+// some of the cases.
+// You may well conclude that the decreased overall state space produced
+// by compression is not worth the effort of compressing multiple threads
+// together -- sometimes.
+
+%%ext_atomic=false
+%%MinI = 0
+%%MaxI = 5   -- must equal N
+%%InitB = false
+%%InitI = 0
+%%ditype = {0..MaxI-1}
+%%dctype = {0..MaxI}
+%%LockOrder = <>
+%%CheckLockOrder = false
+
+const N=5
+
+int[] flag,last;
+
+
+sig css:int,cse:int;
+
+// Note that this algorithm, on a single iteration, has three layers of loops.
+
+Thread(i) = 
+{int j, k;
+ bool lb;
+iter
+{
+ j := 1;
+ while j<N do
+   {
+    flag[i] := j;
+    last[j] := i;
+    lb := true;
+    k := 0;
+    while k < N do
+       {if lb && (k != i) then
+          while lb && (flag[k] >= flag[i]) do
+                {lb := (last[j]=i)};
+        k := k+1};
+    j := j+1
+   };
+   sig(css.i);
+   sig(cse.i);
+   flag[i] := 0
+}
+}
+// Note that we have explicitly assigned array components to threads.
+// Without this SVA might make a worse job of it since all the threads
+// can assign to all the last[j].
+
+%%SPEC = css?i -> cse!i -> SPEC
+
+// Here are versions to use for N=4,5,6,7
+
+WideStruct = hierarchCompress <Thread(0),Thread(1),Thread(2),Thread(3)>
+//WideStruct = hierarchCompress <Thread(0),Thread(1),Thread(2),Thread(3),Thread(4)>
+//WideStruct = hierarchCompress <Thread(0),Thread(1),Thread(2),Thread(3),Thread(4),Thread(5)>
+//WideStruct = hierarchCompress <Thread(0),Thread(1),Thread(2),Thread(3),Thread(4),Thread(5),Thread(6)>
+
+PairStruct = hierarchCompress <<Thread(0),Thread(1)>,<Thread(2),Thread(3)>>
+//PairStruct = hierarchCompress <<Thread(0),Thread(1)>,<Thread(2),Thread(3)>,Thread(4)>
+//PairStruct = hierarchCompress <<Thread(0),Thread(1)>,<Thread(2),Thread(3)>,<Thread(4),Thread(5)>>
+//PairStruct = hierarchCompress <<Thread(0),Thread(1)>,<Thread(2),Thread(3)>,<Thread(4),Thread(5)>,Thread(6)>
+
+
+
+assert %- SPEC [T= WideStruct -% in WideStruct
+assert %- SPEC [T= PairStruct -% in PairStruct
+

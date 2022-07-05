@@ -1,0 +1,97 @@
+
+// bakerysimp2.svl
+
+// The simplified bakery algorithm implemented for SVA
+// As described in Sect 18.5 of Understanding Concurrent Systems
+
+// With a parameterised maximum algorithm as described in Chapter 19
+
+// Bill Roscoe
+
+// first, directions to the SVA compiler
+// some of these such as ext_atomic have not been explained by Sect 18.5
+
+%%ext_atomic=false  -- only needed for refinement
+%%MinI = 0          -- least member of integer type
+%%MaxI = 15          -- greatest member of integer type
+%%InitB = false     -- default Boolean initialisation
+%%InitI = MinI      -- default integer initialisation
+%%ditype = {1..N}   -- default type for array indexing
+%%dctype = {MinI..MaxI}  -- default content type for integer arrays
+
+sig css : int, cse : int;   
+
+int[] turn,temp,j;
+const N = 3;    // number of threads indexed 1..N
+
+MaxA(i) = {temp[i]:=0; 
+          j[i]:=1;
+          while j[i]<=N do
+           {temp[i] := max(temp[i],turn[j[i]]);
+            j[i]:=j[i]+1};
+          turn[i] := temp[i]+1}
+
+MaxB(i) = {j[i]:=1;
+          while j[i] <=N do
+           {turn[i] := max(turn[i],turn[j[i]]);
+            j[i] := j[i]+1};
+          turn[i] := turn[i] +1;}
+
+MaxC(i) = {
+          j[i]:=1;
+          while j[i]<=N do
+           {temp[i] := turn[j[i]];
+            if temp[i] > turn[i] then turn[i] := temp[i];
+            j[i] := j[i]+1};
+          turn[i] := turn[i]+1}
+
+MaxD(i) = {
+          j[i]:=1;
+          while j[i]<=N do
+           {if turn[j[i]] > turn[i] then turn[i] := turn[j[i]];
+           j[i] := j[i]+1};
+          turn[i] := turn[i]+1}
+
+Max(m,i) = if m=1 then MaxA(i) 
+         else if m=2 then MaxB(i) 
+         else if m=3 then MaxC(i)
+         else MaxD(i)
+
+PP(i,m) = iter
+{
+    int k;
+    turn[i] := 1;
+    Max(m,i);         // maximum algorithms as described below
+    k := 1;
+    while k <= N do
+    {
+     if k >= i then
+         while turn[k]>0 && turn[k] < turn[i] do skip
+      else
+         while turn[k]>0 && turn[k] <= turn[i] do skip;
+     k := k + 1;
+    };
+    sig(css.i);   // start of critical section
+    sig(cse.i);   // end of critical section
+    turn[i] := 0;
+
+}
+
+
+
+WideStructA = hierarchCompress < PP(3,1),PP(2,1),PP(1,1)>
+WideStructB = hierarchCompress < PP(3,2),PP(2,2),PP(1,2)>
+WideStructC = hierarchCompress < PP(3,3),PP(2,3),PP(1,3)>
+WideStructD = hierarchCompress < PP(3,4),PP(2,4),PP(1,4)>
+
+
+
+%%SPEC = css?i -> cse!i -> SPEC
+
+
+assert %- SPEC [T= WideStructA \{|error,verror|} -% in WideStructA
+assert %- SPEC [T= WideStructB \{|error,verror|} -% in WideStructB
+assert %- SPEC [T= WideStructC \{|error,verror|} -% in WideStructC
+assert %- SPEC [T= WideStructD \{|error,verror|} -% in WideStructD
+
+

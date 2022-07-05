@@ -1,0 +1,124 @@
+
+// compmax.svl
+
+// David Hopkins and Bill Roscoe
+
+// Using SVA's refinement checking capabilities on maximum algorithms
+// for the bakery algorithm
+
+%%--  The lower and upper limits of the integer type
+%%MinI = 0
+%%MaxI = 5
+
+%%--  The default initial values for integer and boolean variables/array 
+%%--  components
+
+%%InitB = false
+%%InitI = MinI
+
+%%-- default indexing type for arrays
+
+%%ditype = {1..N}
+%%dctype = {MinI..MaxI}
+
+%%ext_atomic=false
+
+const N = 4;
+
+int %3 [] turn;
+int j, temp;
+
+SeqWrites = {turn[3]}
+SeqReads = {turn[3]}
+ParReads = {turn}
+ParWrites = {turn[1],turn[2],turn[4]}
+
+// The maximum algorithms
+// These versions all use the turn array of the
+// simplified bakery algorithm, and incorporate
+// the addition of one used in B.A.
+
+MaxC(i) = 
+{
+	//int j, temp;
+	j := 1;
+	while (j <= N) do
+	{
+		temp := turn[j];
+		if temp >= turn[i] then
+			turn[i] := temp;
+		j := j + 1;
+	};
+	turn[i] := turn[i] + 1;
+}
+
+MaxA(i) = 
+{
+	//int j, temp;
+	temp := 0;
+	j := 1;
+	while j <= N do
+	{
+		temp := max(turn[j],temp);
+		j := j + 1;
+	};
+	turn[i] := temp + 1
+}
+
+MaxB(i) =
+{
+	//int j;
+	j := 1;
+	while j <= N do
+	{
+		turn[i] := max(turn[j],turn[i]);
+		j := j + 1
+	};
+	turn[i] := turn[i] + 1
+
+}
+
+MaxD(i) = 
+{
+	//int j;
+	j := 1;
+	while j <= N do
+	{
+		if turn[i] < turn[j] then
+			turn[i] := turn[j];
+		j := j + 1
+	};
+	turn[i] := turn[i] + 1
+
+}
+
+// The following assertions use the sets SeqWrites etc as
+// defined above and explained in the book.
+// ext_atomic is important here.
+
+// [G= means General refinement
+// [S= means Sequential refinment
+// [P= means Parallel refinement
+
+
+// The results here are not as quoted in the book (where it states that MaxA
+// refines the others), which were derived from an earlier version of this
+// file with different definitions.
+
+assert MaxA(3) [G= MaxB(3)
+assert MaxB(3) [G= MaxC(3)
+assert MaxC(3) [G= MaxB(3)
+assert MaxC(3) [G= MaxD(3)
+
+assert MaxD(3) [G= MaxB(3)
+assert MaxB(3) [G= MaxA(3)
+assert MaxD(3) [G= MaxA(3)
+
+assert MaxA(3) [S= MaxB(3)
+assert MaxB(3) [S= MaxC(3)
+assert MaxC(3) [S= MaxB(3)
+assert MaxC(3) [S= MaxD(3)
+
+assert MaxD(3) [S= MaxB(3)
+assert MaxB(3) [S= MaxA(3)
+

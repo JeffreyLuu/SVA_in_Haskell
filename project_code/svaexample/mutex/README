@@ -1,0 +1,13 @@
+This directory contains versions of a number of standard
+mutual exclusion algorithms, most of which can be found in
+Chapters 18 and 19.  All except petersonN are binary and represent
+small examples for SVA.
+
+One of them, as discussed in the book, does not work properly.
+
+Of course the bakery algorithm is also a mutual exclusion algorithm,
+but it has its own separate directories.
+
+Applications of mutual exclusion can also be found in the
+dining philosopher directory svdphils.
+

@@ -1,0 +1,49 @@
+
+
+// ddekker.svl
+// Dekker's algorithm for SVA
+// with dirty shared variables
+
+%%ext_atomic=false
+%%MinI = 0
+%%MaxI = 3
+%%InitB = false
+%%InitI = 0
+%%ditype = {1,2}
+%%dctype = {MinI..MaxI}
+%%LockOrder = <>
+%%CheckLockOrder = false
+
+dirty bool[] bb;
+dirty int tt;
+int count; // does not need to be dirty as part of specification
+
+
+sig mutexerror;
+
+PP(i) = {
+iter {bb[i] := true;
+             while bb[3-i] do
+               {if tt=3-i then
+                    {bb[i] := false;
+                    while tt=3-i do skip;
+                     bb[i] := true}};
+             count := count + 1;
+             if count > 1 then sig(mutexerror);
+             count := count-1;
+             bb[i] := false;}
+}
+
+
+
+WideStruct = hierarchCompress <PP(1),PP(2)>
+NoCompress = <PP(1),PP(2)>
+
+
+
+
+
+assert %- STOP [T= WideStruct  -% in WideStruct
+assert %- STOP [T= NoCompress  -% in NoCompress
+
+

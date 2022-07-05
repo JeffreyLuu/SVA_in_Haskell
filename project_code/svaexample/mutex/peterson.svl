@@ -1,0 +1,42 @@
+
+
+
+%%ext_atomic=false
+%%MinI = 0
+%%MaxI = 3
+%%InitB = false
+%%InitI = 0
+%%ditype = {0,1}
+%%dctype = {MinI..MaxI}
+%%LockOrder = <>
+%%CheckLockOrder = false
+
+
+bool[] flag;
+int t;
+int count;
+
+
+sig mutexerror;
+
+PP(i) = {iter {flag[i] := true;
+             t := 1-i;
+             while flag[1-i] && (t = 1-i) do skip;
+             count := count + 1;
+             if count > 1 then sig(mutexerror);
+             count := count -1;
+             flag[i] := false;}}
+
+
+
+
+WideStruct = hierarchCompress <PP(0),PP(1)>
+NoCompress = <PP(0),PP(1)>
+
+
+
+
+
+assert %- STOP [T= WideStruct  -% in WideStruct
+assert %- STOP [T= NoCompress  -% in NoCompress
+

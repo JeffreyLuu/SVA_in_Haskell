@@ -1,0 +1,14 @@
+This directory contains two example files illustrating the use
+of OVERSEERS in SVA: processes that run with priority until completion 
+whenever one of their variables is assigned to.
+
+See Section 19.5 of UCS for further explanation and the origin of these
+examples.
+
+cq.svl  implements a circular queue
+lq.svl  implements a queue in which all data is shifted to the front
+
+So the above are intended to be equivalent implementations of the
+same externally visible type.
+
+See also bakeryproof2.svl and bakeryproof3.svl in bakery3

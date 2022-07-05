@@ -1,0 +1,71 @@
+// simpson4.svl
+// Simpson's 4-slot algorithm
+// Bill Roscoe
+
+// This file shows that even with write when different.
+// the algorithm has the potential for sequential
+// inconsistency when the flag variables are dirty.
+
+
+%%ext_atomic=false
+%%MinI = 0
+%%MaxI = 4
+%%InitB = false
+%%InitI = 0
+%%ditype = {0,1}
+%%dctype = {0,1}
+%%LockOrder = <>
+%%CheckLockOrder = false
+
+dirty int[4] slot;  
+dirty int[] index;
+
+dirty int reading,latest;
+
+// changing index, reading and latest to clean removes the problem
+
+// As described in the text, this specification is implemented by
+// writing an arbitrary number of 0s followed by an arbitrary number of
+// 1s with all the slots being initialised to 0.
+// It is possible to read 0 after 1 if and only if there is the
+// potential for sequential inconsistency.
+
+bool[] okread;
+int seqv;
+bool seenone;
+
+sig outofseq;
+
+Writer() = iter
+{
+    int wpair, windex, inp, wval;
+    inp := seqv;
+    wval := inp;
+    wpair := 1 - reading%2;
+    windex := 1 - index[wpair];
+    slot[2*wpair + windex] := wval;
+    if index[wpair]=windex then skip else index[wpair] := windex;
+    if latest=wpair then skip else latest := wpair;
+}
+
+Reader() = iter
+{
+    int rpair, rindex, outp;
+    rpair := latest%2;
+    if reading=rpair then skip else reading := rpair;
+    rindex := index[rpair]%2;
+    outp := slot[2*rpair + rindex];
+    if outp=1 then seenone := true;
+    if outp=0 && seenone then sig(outofseq);  // flagging the error
+}
+
+Succ() =  {seqv := 0; seqv := 1}
+
+
+WideStruct = hierarchCompress <Succ(),Reader(),Writer()>
+
+
+
+
+assert %- STOP [T= WideStruct -% in WideStruct
+

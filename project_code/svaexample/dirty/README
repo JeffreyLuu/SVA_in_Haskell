@@ -1,0 +1,6 @@
+This directory contains some of the files from the mutex and bakery1
+directory with their shared variables made dirty (see Section 19.1 of
+UCS).
+
+You will find that some of them continue to satisfy their specifications,
+and some do not.

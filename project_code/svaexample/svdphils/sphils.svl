@@ -1,0 +1,51 @@
+%%ext_atomic=false  -- only needed for refinement
+%%MinI = 0          -- least member of integer type
+%%MaxI = N          -- greatest member of integer type
+%%InitB = false     -- default Boolean initialisation
+%%InitI = MinI      -- default integer initialisation
+%%ditype = {0..N-1}   -- default type for array indexing
+%%dctype = {1,2}  -- default content type for integer arrays
+%%LockOrder = <>
+%%CheckLockOrder = false
+
+
+lock[] fork;
+
+const N = 6
+const SymPhils = false
+
+sig eats : int, lget : int, rget : int, lput : int, rput : int;
+
+
+Phil(i) = iter {
+    if ((i=0) && (! SymPhils))
+    then {
+        fork[(i+1)%N].lock;
+        fork[i].lock;
+        sig(eats.i);
+        fork[(i+1)%N].unlock;
+        fork[i].unlock;
+    } else {
+        fork[i].lock;
+        fork[(i+1)%N].lock;
+        sig(eats.i);
+        fork[(i+1)%N].unlock;
+        fork[i].unlock;
+    }
+}
+
+System = <Phil(0), Phil(1), Phil(2), Phil(3), Phil(4), Phil(5)>
+
+// Balanced = <<Phil(0), Phil(1)>, <Phil(2), Phil(3)>>
+
+// LongTree = <Phil(0), <Phil(1), <Phil(2), <Phil(3)>>>>
+
+%%Eaten(n) = if n==0 then STOP else eats?i -> if i == n-1 then Eaten(n-1) else Eaten(n)
+
+assert %- STOP [T= System \ Signals -%
+//assert %- STOP [T= Balanced -%
+//assert %- STOP [T= LongTree -%
+
+assert %- Eaten(N) [T= System -%
+//assert %- Eaten(N) [T= Balanced -%
+//assert %- Eaten(N) [T= LongTree -%

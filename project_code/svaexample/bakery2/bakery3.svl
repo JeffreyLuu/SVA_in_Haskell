@@ -1,0 +1,71 @@
+
+// bakery3.svl
+
+// Lamport's original bakery algorith implemented for SVA
+// As described in Sect 18.5 of Understanding Concurrent Systems
+
+// Showing sensitivity of MaxD to apparently innocent transformation as
+// discussed in Sect 19.6.
+
+// Note that this is a substantial (>50M) state check before the error is found.
+
+// Bill Roscoe
+
+// first, directions to the SVA compiler
+// some of these such as ext_atomic have not been explained by Sect 18.5
+
+%%ext_atomic=false  -- only needed for refinement
+%%MinI = 0          -- least member of integer type
+%%MaxI = 9          -- greatest member of integer type
+%%InitB = false     -- default Boolean initialisation
+%%InitI = MinI      -- default integer initialisation
+%%ditype = {1..N}   -- default type for array indexing
+%%dctype = {MinI..MaxI}  -- default content type for integer arrays
+%%LockOrder = <>
+%%CheckLockOrder = false
+
+sig css : int, cse : int;   
+
+int[] number;
+bool[] choosing
+const N = 5;    // number of threads indexed 1..N
+
+PPD(i) = iter
+{
+    int j;     // declarations of local variables
+    choosing[i] := true;
+          j:=1;
+          while j<=N do
+           {if number[j] >= number[i] then number[i] := number[j]; //transformed
+           j := j+1};
+           number[i] := number[i]+1;
+    choosing[i] := false;
+    j := 1;
+    while j <= N do
+    {
+     while choosing[j] do skip;
+     if j >= i then
+         while  number[j]>0 && number[j] < number[i] do skip
+      else
+         while number[j]>0 && number[j] <= number[i] do skip;
+     j := j + 1;
+    };
+    sig(css.i);   // start of critical section
+    sig(cse.i);   // end of critical section
+    number[i] := 0;
+
+}
+
+
+
+
+WideStructD = hierarchCompress <<PPD(5),PPD(4)>,PPD(3),<PPD(2),PPD(1)>>
+
+
+
+%%SPEC = css?i -> cse!i -> SPEC
+
+
+assert %- SPEC [T= WideStructD \{|error,verror|} -% in WideStructD
+
+

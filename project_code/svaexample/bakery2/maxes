@@ -1,0 +1,25 @@
+    if m=1 then //MaxA
+         {temp:=0; 
+          j:=1;
+          while j<=N do
+           {temp := max(temp,turn[j]);
+            j:=j+1};
+          turn[i] := temp+1}
+    else if m=2 then //MaxB
+         {j:=1;
+          while j <=N do
+           {turn[i] := max(turn[i],turn[j]);
+            j := j+1};
+          turn[i] := turn[i] +1;}
+    else if m=3 then //MaxC
+         {j:=1;
+          while j<=N do
+           {temp := turn[j];
+            if temp > turn[i] then turn[i] := temp;
+            j := j+1};
+          turn[i] := turn[i]+1}
+    else //MaxD
+         {j:=1;
+          while j<=N do
+           {if turn[j] > turn[i] then turn[i] := turn[j];
+           j := j+1};

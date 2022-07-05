@@ -1,0 +1,75 @@
+
+// dbakerysimp.svl
+
+// The simplified bakery algorithm implemented for SVA
+// As described in Sect 18.5 of Understanding Concurrent Systems
+
+// but with dirty shared variables
+
+// Bill Roscoe
+
+// first, directions to the SVA compiler
+// some of these such as ext_atomic have not been explained by Sect 18.5
+
+%%ext_atomic=false  -- only needed for refinement
+%%MinI = 0          -- least member of integer type
+%%MaxI = 15          -- greatest member of integer type
+%%InitB = false     -- default Boolean initialisation
+%%InitI = MinI      -- default integer initialisation
+%%ditype = {1..N}   -- default type for array indexing
+%%dctype = {MinI..MaxI}  -- default content type for integer arrays
+%%LockOrder = <>
+%%CheckLockOrder = false
+
+sig css : int, cse : int;   
+
+dirty int[] turn;
+const N = 3;    // number of threads indexed 1..N
+
+PP(i) = iter
+{
+    int j,temp;     // declarations of local variables
+    turn[i] := 1;
+    temp := 0;
+    j := 1;
+    while j <= N do
+      {temp := max(temp,turn[j]);
+        j := j + 1};
+    turn[i] := temp+1;
+    j := 1;
+    while j <= N do
+    {
+     if j >= i then
+         while turn[j]>0 && turn[j] < turn[i] do skip
+      else
+         while turn[j]>0 && turn[j] <= turn[i] do skip;
+     j := j + 1;
+    };
+    sig(css.i);   // start of critical section
+    sig(cse.i);   // end of critical section
+    turn[i] := 0;
+
+}
+
+
+WideStruct = hierarchCompress < PP(3),PP(2),PP(1)>
+
+
+WideStructUncompressed = < PP(1),PP(2),PP(3)>
+
+%%SPEC = css?i -> cse!i -> SPEC
+
+// The first specification below looks for a run-time error.
+// This can happen because of the ticket growing beyond MaxI
+
+
+assert %- STOP [T= WideStruct \{|css,cse|} -% in WideStruct
+
+// The second tests whether a mutex failure can ever happen
+assert %- SPEC [T= WideStruct \{|error,verror|} -% in WideStruct
+
+// The third illustrates just how much longer the 
+// check takes without compression
+
+assert %- SPEC [T= WideStructUncompressed \{|error,verror|} -% in WideStructUncompressed
+

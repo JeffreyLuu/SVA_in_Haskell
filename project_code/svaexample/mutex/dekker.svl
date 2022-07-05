@@ -1,0 +1,48 @@
+
+// dekker.svl
+// Dekker's algorithm for SVA
+
+%%ext_atomic=false
+%%MinI = 0
+%%MaxI = 3
+%%InitB = false
+%%InitI = 0
+%%ditype = {1,2}
+%%dctype = {MinI..MaxI}
+%%LockOrder = <>
+%%CheckLockOrder = false
+
+
+bool[] b;
+int t;
+int count;
+
+
+sig mutexerror;
+
+PP(i) = {
+iter {b[i] := true;
+             while b[3-i] do
+               {if t=3-i then
+                    {b[i] := false;
+                    while t=3-i do skip;
+                     b[i] := true}};
+             count := count + 1;
+             if count > 1 then sig(mutexerror);
+             count := count-1;
+             b[i] := false;}
+}
+
+
+
+WideStruct = hierarchCompress <PP(1),PP(2)>
+NoCompress = <PP(1),PP(2)>
+
+
+
+
+
+assert %- STOP [T= WideStruct  -% in WideStruct
+assert %- STOP [T= NoCompress  -% in NoCompress
+
+

@@ -1,0 +1,42 @@
+include "refsva.csp"
+
+channel assertionfailed
+channel cse : {MinI..MaxI}
+channel css : {MinI..MaxI}
+Signals = {| assertionfailed, cse, css|}
+
+ISignals = Union ({})
+ivnums = {1..6}
+bvnums = {1..1}
+ianums = {1..1}
+banums = {1..1}
+DirtyVars = Union({})
+ctypes = <>
+catypes = <>
+itypes = <>
+init = (<>,<>)
+LocalIVarMapping_PPD_j(1) = IV.6
+LocalIVarMapping_PPD_j(2) = IV.5
+LocalIVarMapping_PPD_j(3) = IV.4
+LocalIVarMapping_PPD_j(4) = IV.2
+LocalIVarMapping_PPD_j(5) = IV.1
+LocalIVarMapping_PPD_j(6) = IV.3
+N = 6
+ParReads = Union({})
+ParWrites = Union({})
+SeqReads = Union({})
+SeqWrites = Union({})
+
+mostprocs = 6
+ext_atomic=false  -- only needed for refinement
+MinI = 0          -- least member of integer type
+MaxI = 8          -- greatest member of integer type
+InitB = false     -- default Boolean initialisation
+InitI = MinI      -- default integer initialisation
+ditype = {1..N}   -- default type for array indexing
+dctype = {MinI..MaxI}  -- default content type for integer arrays
+SPEC = css?i -> cse!i -> SPEC
+PPD(i) = (Iter.Sq.(Bassign.(BArc.(BA.1,Const.i),True),Sq.(Iassign.(IVar.LocalIVarMapping_PPD_j(i),Const.1),Sq.(While.(CompOp.Le.IVar.LocalIVarMapping_PPD_j(i).Const.N,Sq.(Cond.(CompOp.Ge.IArc.(IA.1,IVar.LocalIVarMapping_PPD_j(i)).IArc.(IA.1,Const.i),Iassign.(IArc.(IA.1,Const.i),IArc.(IA.1,IVar.LocalIVarMapping_PPD_j(i))),Skip),Iassign.(IVar.LocalIVarMapping_PPD_j(i),BIOp.Plus.IVar.LocalIVarMapping_PPD_j(i).Const.1))),Sq.(Iassign.(IArc.(IA.1,Const.i),BIOp.Plus.IArc.(IA.1,Const.i).Const.1),Sq.(Iassign.(IVar.LocalIVarMapping_PPD_j(i),Const.1),Sq.(While.(CompOp.Le.IVar.LocalIVarMapping_PPD_j(i).Const.N,Sq.(While.(BArc.(BA.1,IVar.LocalIVarMapping_PPD_j(i)),Skip),Sq.(Cond.(CompOp.Ge.IVar.LocalIVarMapping_PPD_j(i).Const.i,While.(BBOp.And.CompOp.Gt.IArc.(IA.1,IVar.LocalIVarMapping_PPD_j(i)).Const.0.CompOp.Lt.IArc.(IA.1,IVar.LocalIVarMapping_PPD_j(i)).IArc.(IA.1,Const.i),Skip),While.(BBOp.And.CompOp.Gt.IArc.(IA.1,IVar.LocalIVarMapping_PPD_j(i)).Const.0.CompOp.Le.IArc.(IA.1,IVar.LocalIVarMapping_PPD_j(i)).IArc.(IA.1,Const.i),Skip)),Iassign.(IVar.LocalIVarMapping_PPD_j(i),BIOp.Plus.IVar.LocalIVarMapping_PPD_j(i).Const.1)))),Sq.(Sig.css.i,Sq.(Sig.cse.i,Iassign.(IArc.(IA.1,Const.i),Const.0)))))))))
+, (Union({{IVar.LocalIVarMapping_PPD_j(i)}}),Union({{}})))
+WideStructD = HierarchCompressedCompile(CSNode.<CSNode.<CSLeaf.PPD(5),CSLeaf.PPD(4)>,CSNode.<CSLeaf.PPD(6),CSLeaf.PPD(3)>,CSNode.<CSLeaf.PPD(2),CSLeaf.PPD(1)>>) ({| c | c <-Union({Signals,ISignals,Errors}) |})
+assert  SPEC [T= WideStructD \{|error,verror|} 

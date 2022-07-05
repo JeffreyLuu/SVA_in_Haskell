@@ -1,0 +1,47 @@
+
+// ref.sva
+
+// Simple example of refinement between shared variable programs
+// illustrating the need for ext_atomic.
+
+// The programs PP and QQ are equivalent if this is set to false,
+// but not when it is true.
+
+%%ext_atomic=false
+%%MinI = 0
+%%MaxI = 3
+%%InitB = false
+%%InitI = 0
+%%ditype = {0,1}
+%%dctype = {MinI..MaxI}
+
+int x,y;
+
+ParReads = {x,y}
+
+// If, additionally, x and y are made externally writable,
+// equivalence fails even with ext_atomic = false
+
+ParWrites = {x,y}
+
+
+
+
+
+PP() = {iter {x := 1;
+              x := 0;
+              y := 1;
+              y := 0}}
+
+QQ() = {iter {x := 1;
+              y := 1;
+              x := 0;
+              y := 0}}
+
+
+
+// The general refinement relation (see book)
+
+assert  PP() [G= QQ()
+assert  QQ() [G= PP()
+

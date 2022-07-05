@@ -1,0 +1,59 @@
+
+
+// knuth.svl
+// Knuth's mutex algorithm for SVA
+
+%%ext_atomic=false
+%%MinI = 0
+%%MaxI = 3
+%%InitB = false
+%%InitI = 1
+%%ditype = {1,2}
+%%dctype = {MinI..MaxI}
+%%LockOrder = <>
+%%CheckLockOrder = false
+
+
+bool[] b;
+int[] c;
+int t,k;
+int count;
+
+
+sig mutexerror;
+
+PP(i) = iter
+{
+b[i] := true;
+while b[i] do
+ {
+ c[i] := 1;
+ while b[i] do
+   if k=i then b[i] := false
+   else
+   if c[3-i] = 0 then b[i] := false
+                 else skip;
+ c[i] := 2;
+ if c[3-i] = 2 then b[i] := true
+ };
+ k := i;
+             count := count + 1;
+             if count > 1 then sig(mutexerror);
+             count := count -1;
+ k := 3-i;
+ c[i] := 0;
+}
+
+
+WideStruct = hierarchCompress <PP(1),PP(2)>
+NoCompress = <PP(1),PP(2)>
+
+
+
+
+
+assert %- STOP [T= WideStruct  -% in WideStruct
+assert %- STOP [T= NoCompress  -% in NoCompress
+
+
+

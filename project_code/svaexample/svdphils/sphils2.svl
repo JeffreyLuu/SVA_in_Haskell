@@ -1,0 +1,44 @@
+%%ext_atomic=false  -- only needed for refinement
+%%MinI = 0          -- least member of integer type
+%%MaxI = N          -- greatest member of integer type
+%%InitB = false     -- default Boolean initialisation
+%%InitI = MinI      -- default integer initialisation
+%%ditype = {0..N-1}   -- default type for array indexing
+%%dctype = {1,2}  -- default content type for integer arrays
+%%LockOrder = <fork[1], fork[0], fork[3], fork[2]>
+%%CheckLockOrder = false
+
+lock[] fork;
+const N = 4;
+const SymPhils = false;
+sig eats : int;
+
+-- right-handed philosopher
+RPhil(i) = iter {
+    fork[i].lock; fork[(i+1)%N].lock;
+    sig(eats.i);
+    fork[i].unlock; fork[(i+1)%N].unlock;
+}
+
+-- left-handed philosopher
+LPhil(i) = iter {
+    fork[(i+1)%N].lock; fork[i].lock;
+    sig(eats.i);
+    fork[(i+1)%N].unlock; fork[i].unlock;
+}
+
+-- overall concurrent programs, 
+Prog1 = <RPhil(0), RPhil(1), RPhil(2), RPhil(3)>
+Prog2 = <LPhil(0), RPhil(1), RPhil(2), RPhil(3)>
+
+-- The checks below check for runtime errors (there are none) and
+-- count states.
+assert %- STOP [T= Prog1 \ Signals -%
+assert %- STOP [T= Prog2 \ Signals -%
+
+-- To demonstrate how the network works, the following specification says
+-- that the network can't have the philosophers all eat in descending order
+-- and then eat again.  This should fail.  
+%%Eaten(n) = if n==0 then STOP else eats?i -> if i == n-1 then Eaten(n-1) else Eaten(n)
+assert %- Eaten(N) [T= Prog1 -%
+assert %- Eaten(N) [T= Prog2 -%

@@ -1,0 +1,10 @@
+This directory contains files implementing the general proof of the
+original bakery algorithm described in Section 19.6.
+
+bakeryproof1.svl  deals with the generalisation to an arbitrary number of
+                  threads discussed in 19.6.1
+
+bakeryproof2.svl  builds on this, using an overseer and atomic equivalents
+                  to reduce ticket values to a finite type: see 19.6.2
+
+

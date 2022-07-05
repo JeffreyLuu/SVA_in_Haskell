@@ -1,0 +1,66 @@
+// simpson2.svl
+// Simpson's 4-slot algorithm.
+// This file shows that clean flag variables are needed to
+// achieve recentness of read values/
+
+%%ext_atomic=false
+%%MinI = 0
+%%MaxI = 4
+%%InitB = false
+%%InitI = 0
+%%ditype = {0,1}
+%%dctype = {0,1}
+%%LockOrder = <>
+%%CheckLockOrder = false
+
+dirty int[4] slot;
+dirty int[] index;        // experiment by changing dirtiness
+
+dirty int reading,latest;// experiment by changing dirtiness
+dirty int rand;
+
+bool[] okread;    // array present for the specification
+int wval,lastw;
+
+sig wrongval;
+
+Writer() = iter
+{
+    int wpair, windex, inp;
+    inp := rand%2;
+    wval := inp;
+    okread[wval] := true;   //if a value has been written since
+                            //start of read, it's OK to read it
+    wpair := 1 - reading%2;
+    windex := 1 - index[wpair];
+    slot[2*wpair + windex] := wval;
+    index[wpair] := windex;
+    latest := wpair;
+    lastw := wval;
+}
+
+Reader() = iter
+{
+    int rpair, rindex, outp;
+    okread[0] := false;
+    okread[1] := false;
+    okread[wval] := true;  //It's OK to read value of current
+    okread[lastw] := true; //or most recently completed write
+    rpair := latest%2;
+    reading := rpair%2;
+    rindex := index[rpair]%2;
+    outp := slot[2*rpair + rindex];
+    if okread[outp] then skip else sig(wrongval); //catches not recent values
+}
+
+Rand() = iter {rand := 0}    //This dirty assignment means
+                             //that 0..3 can be read
+
+
+WideStruct = hierarchCompress <Rand(),Reader(),Writer()>
+
+
+
+
+assert %- STOP [T= WideStruct -% in WideStruct
+
