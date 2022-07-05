@@ -1,0 +1,35 @@
+include "refsva.csp"
+
+channel assertionfailed
+channel mutexerror
+Signals = {| assertionfailed, mutexerror|}
+
+ISignals :: {Int=>Event}
+ISignals = Union ({})
+ivnums = {1..2}
+bvnums = {1..1}
+ianums = {1..0}
+banums = {1..1}
+DirtyVars = Union({})
+ctypes = <>
+catypes = <>
+itypes = <>
+init = (<>,<>)
+ParReads = Union({})
+ParWrites = Union({})
+SeqReads = Union({})
+SeqWrites = Union({})
+
+mostprocs = 2
+ext_atomic=false
+MinI = 0
+MaxI = 3
+InitB = false
+InitI = 0
+ditype = {1,2}
+dctype = {MinI..MaxI}
+PP(i) = (Iter.Sq.(Bassign.(BArc.(BA.1,Const.i),True),Sq.(While.(BArc.(BA.1,BIOp.Minus.Const.3.Const.i),Cond.(CompOp.Eq.IVar.IV.1.BIOp.Minus.Const.3.Const.i,Sq.(Bassign.(BArc.(BA.1,Const.i),False),Sq.(While.(CompOp.Eq.IVar.IV.1.BIOp.Minus.Const.3.Const.i,Skip),Bassign.(BArc.(BA.1,Const.i),True))),Skip)),Sq.(Iassign.(IVar.IV.2,BIOp.Plus.IVar.IV.2.Const.1),Sq.(Cond.(CompOp.Gt.IVar.IV.2.Const.1,Sig.mutexerror,Skip),Sq.(Iassign.(IVar.IV.2,BIOp.Minus.IVar.IV.2.Const.1),Bassign.(BArc.(BA.1,Const.i),False))))))
+, (Union({{}}),Union({{}})))
+NoCompress = StructuredCompile(CSNode.<CSLeaf.PP(1),CSLeaf.PP(2)>) ({| c | c <-Union({Signals,ISignals',Errors}) |})
+WideStruct = HierarchCompressedCompile(CSNode.<CSLeaf.PP(1),CSLeaf.PP(2)>) ({| c | c <-Union({Signals,ISignals',Errors}) |})
+assert  STOP [T= WideStruct  

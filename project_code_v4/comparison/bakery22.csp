@@ -1,0 +1,77 @@
+include "refsva.csp"
+
+channel assertionfailed
+channel cse : {MinI..MaxI}
+channel css : {MinI..MaxI}
+Signals = {| assertionfailed, cse, css|}
+
+ISignals :: {Int=>Event}
+ISignals = Union ({})
+ivnums = {1..32}
+bvnums = {1..1}
+ianums = {1..1}
+banums = {1..1}
+DirtyVars = Union({})
+ctypes = <>
+catypes = <>
+itypes = <>
+init = (<>,<>)
+LocalIVarMapping_PP_j(1,1) = IV.7
+LocalIVarMapping_PP_j(1,2) = IV.15
+LocalIVarMapping_PP_j(1,3) = IV.23
+LocalIVarMapping_PP_j(1,4) = IV.31
+LocalIVarMapping_PP_j(2,1) = IV.5
+LocalIVarMapping_PP_j(2,2) = IV.13
+LocalIVarMapping_PP_j(2,3) = IV.21
+LocalIVarMapping_PP_j(2,4) = IV.29
+LocalIVarMapping_PP_j(3,1) = IV.3
+LocalIVarMapping_PP_j(3,2) = IV.11
+LocalIVarMapping_PP_j(3,3) = IV.19
+LocalIVarMapping_PP_j(3,4) = IV.27
+LocalIVarMapping_PP_j(4,1) = IV.1
+LocalIVarMapping_PP_j(4,2) = IV.9
+LocalIVarMapping_PP_j(4,3) = IV.17
+LocalIVarMapping_PP_j(4,4) = IV.25
+LocalIVarMapping_PP_temp(1,1) = IV.8
+LocalIVarMapping_PP_temp(1,2) = IV.16
+LocalIVarMapping_PP_temp(1,3) = IV.24
+LocalIVarMapping_PP_temp(1,4) = IV.32
+LocalIVarMapping_PP_temp(2,1) = IV.6
+LocalIVarMapping_PP_temp(2,2) = IV.14
+LocalIVarMapping_PP_temp(2,3) = IV.22
+LocalIVarMapping_PP_temp(2,4) = IV.30
+LocalIVarMapping_PP_temp(3,1) = IV.4
+LocalIVarMapping_PP_temp(3,2) = IV.12
+LocalIVarMapping_PP_temp(3,3) = IV.20
+LocalIVarMapping_PP_temp(3,4) = IV.28
+LocalIVarMapping_PP_temp(4,1) = IV.2
+LocalIVarMapping_PP_temp(4,2) = IV.10
+LocalIVarMapping_PP_temp(4,3) = IV.18
+LocalIVarMapping_PP_temp(4,4) = IV.26
+N = 4
+ParReads = Union({})
+ParWrites = Union({})
+SeqReads = Union({})
+SeqWrites = Union({})
+
+mostprocs = 4
+ext_atomic=false  -- only needed for refinement
+MinI = 0          -- least member of integer type
+MaxI = 10          -- greatest member of integer type
+InitB = false     -- default Boolean initialisation
+InitI = MinI      -- default integer initialisation
+ditype = {1..N}   -- default type for array indexing
+dctype = {MinI..MaxI}  -- default content type for integer arrays
+LockOrder = <>
+CheckLockOrder = false
+SPEC = css?i -> cse!i -> SPEC
+PP(i,m) = (Iter.Sq.(Bassign.(BArc.(BA.1,Const.i),True),Sq.(Cond.(CompOp.Eq.Const.m.Const.1,Sq.(Iassign.(IVar.LocalIVarMapping_PP_temp(i,m),Const.0),Sq.(Iassign.(IVar.LocalIVarMapping_PP_j(i,m),Const.1),Sq.(While.(CompOp.Le.IVar.LocalIVarMapping_PP_j(i,m).Const.N,Sq.(Iassign.(IVar.LocalIVarMapping_PP_temp(i,m),BIOp.Max.IVar.LocalIVarMapping_PP_temp(i,m).IArc.(IA.1,IVar.LocalIVarMapping_PP_j(i,m))),Iassign.(IVar.LocalIVarMapping_PP_j(i,m),BIOp.Plus.IVar.LocalIVarMapping_PP_j(i,m).Const.1))),Iassign.(IArc.(IA.1,Const.i),BIOp.Plus.IVar.LocalIVarMapping_PP_temp(i,m).Const.1)))),Cond.(CompOp.Eq.Const.m.Const.2,Sq.(Iassign.(IVar.LocalIVarMapping_PP_j(i,m),Const.1),Sq.(While.(CompOp.Le.IVar.LocalIVarMapping_PP_j(i,m).Const.N,Sq.(Iassign.(IArc.(IA.1,Const.i),BIOp.Max.IArc.(IA.1,Const.i).IArc.(IA.1,IVar.LocalIVarMapping_PP_j(i,m))),Iassign.(IVar.LocalIVarMapping_PP_j(i,m),BIOp.Plus.IVar.LocalIVarMapping_PP_j(i,m).Const.1))),Iassign.(IArc.(IA.1,Const.i),BIOp.Plus.IArc.(IA.1,Const.i).Const.1))),Cond.(CompOp.Eq.Const.m.Const.3,Sq.(Iassign.(IVar.LocalIVarMapping_PP_j(i,m),Const.1),Sq.(While.(CompOp.Le.IVar.LocalIVarMapping_PP_j(i,m).Const.N,Sq.(Iassign.(IVar.LocalIVarMapping_PP_temp(i,m),IArc.(IA.1,IVar.LocalIVarMapping_PP_j(i,m))),Sq.(Cond.(CompOp.Gt.IVar.LocalIVarMapping_PP_temp(i,m).IArc.(IA.1,Const.i),Iassign.(IArc.(IA.1,Const.i),IVar.LocalIVarMapping_PP_temp(i,m)),Skip),Iassign.(IVar.LocalIVarMapping_PP_j(i,m),BIOp.Plus.IVar.LocalIVarMapping_PP_j(i,m).Const.1)))),Iassign.(IArc.(IA.1,Const.i),BIOp.Plus.IArc.(IA.1,Const.i).Const.1))),Sq.(Iassign.(IVar.LocalIVarMapping_PP_j(i,m),Const.1),Sq.(While.(CompOp.Le.IVar.LocalIVarMapping_PP_j(i,m).Const.N,Sq.(Cond.(CompOp.Gt.IArc.(IA.1,IVar.LocalIVarMapping_PP_j(i,m)).IArc.(IA.1,Const.i),Iassign.(IArc.(IA.1,Const.i),IArc.(IA.1,IVar.LocalIVarMapping_PP_j(i,m))),Skip),Iassign.(IVar.LocalIVarMapping_PP_j(i,m),BIOp.Plus.IVar.LocalIVarMapping_PP_j(i,m).Const.1))),Iassign.(IArc.(IA.1,Const.i),BIOp.Plus.IArc.(IA.1,Const.i).Const.1)))))),Sq.(Iassign.(IVar.LocalIVarMapping_PP_j(i,m),Const.1),Sq.(While.(CompOp.Le.IVar.LocalIVarMapping_PP_j(i,m).Const.N,Sq.(While.(BArc.(BA.1,IVar.LocalIVarMapping_PP_j(i,m)),Skip),Sq.(Cond.(CompOp.Ge.IVar.LocalIVarMapping_PP_j(i,m).Const.i,While.(BBOp.And.CompOp.Gt.IArc.(IA.1,IVar.LocalIVarMapping_PP_j(i,m)).Const.0.CompOp.Lt.IArc.(IA.1,IVar.LocalIVarMapping_PP_j(i,m)).IArc.(IA.1,Const.i),Skip),While.(BBOp.And.CompOp.Gt.IArc.(IA.1,IVar.LocalIVarMapping_PP_j(i,m)).Const.0.CompOp.Le.IArc.(IA.1,IVar.LocalIVarMapping_PP_j(i,m)).IArc.(IA.1,Const.i),Skip)),Iassign.(IVar.LocalIVarMapping_PP_j(i,m),BIOp.Plus.IVar.LocalIVarMapping_PP_j(i,m).Const.1)))),Sq.(Sig.css.i,Sq.(Sig.cse.i,Iassign.(IArc.(IA.1,Const.i),Const.0)))))))
+, (Union({{IVar.LocalIVarMapping_PP_j(i,m),IVar.LocalIVarMapping_PP_temp(i,m)}}),Union({{}})))
+WideStructA = HierarchCompressedCompile(CSNode.<CSLeaf.PP(4,1),CSLeaf.PP(3,1),CSLeaf.PP(2,1),CSLeaf.PP(1,1)>) ({| c | c <-Union({Signals,ISignals',Errors}) |})
+WideStructB = HierarchCompressedCompile(CSNode.<CSLeaf.PP(4,2),CSLeaf.PP(3,2),CSLeaf.PP(2,2),CSLeaf.PP(1,2)>) ({| c | c <-Union({Signals,ISignals',Errors}) |})
+WideStructC = HierarchCompressedCompile(CSNode.<CSLeaf.PP(4,3),CSLeaf.PP(3,3),CSLeaf.PP(2,3),CSLeaf.PP(1,3)>) ({| c | c <-Union({Signals,ISignals',Errors}) |})
+WideStructD = HierarchCompressedCompile(CSNode.<CSLeaf.PP(4,4),CSLeaf.PP(3,4),CSLeaf.PP(2,4),CSLeaf.PP(1,4)>) ({| c | c <-Union({Signals,ISignals',Errors}) |})
+assert  SPEC [T= WideStructA \{|error,verror|} 
+assert  SPEC [T= WideStructB \{|error,verror|} 
+assert  SPEC [T= WideStructC \{|error,verror|} 
+assert  SPEC [T= WideStructD \{|error,verror|} 

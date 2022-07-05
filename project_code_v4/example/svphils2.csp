@@ -1,0 +1,125 @@
+include "Helper2.csp"
+
+datatype Var = DummyVar
+datatype Arr = fork
+
+ivnums :: {Var}
+ivnums = {}
+ianums :: {Arr}
+ianums = {}
+bvnums :: {Var}
+bvnums = {}
+banums :: {Arr}
+banums = {}
+lvnums :: {Var}
+lvnums = {}
+lanums = {fork}
+
+DirtyVars = Union({})
+
+
+itype(_) = ditype
+
+ctypeMap = (<>,<>)
+initIMap = (<>,<>)
+initBMap = (<>,<>)
+
+MinI = 0
+MaxI = 4
+InitI = 0
+ditype = {0,1,2,3}
+dctype = {1,2}
+N = 4
+ext_atomic = false
+InitB = false
+LockOrder = <LA.fork.1,LA.fork.0,LA.fork.3,LA.fork.2>
+CheckLockOrder = false
+SymPhils = false
+Eaten(n) = if n==0 then STOP else eats?i -> if i == n-1 then Eaten(n-1) else Eaten(n)
+
+needVarAt = false
+
+RPhil(i,th) = (
+  let tmpProc_1() = (
+    ((if member(i,itype(fork)) then Lock!th!LA.fork.i!lock -> SKIP else error!th -> STOP) ;
+    (if member((i+1)%N,itype(fork)) then Lock!th!LA.fork.((i+1)%N)!lock -> SKIP else error!th -> STOP) ;
+    (eats!i -> SKIP) ;
+    (if member(i,itype(fork)) then Lock!th!LA.fork.i!unlock -> SKIP else error!th -> STOP) ;
+    (if member((i+1)%N,itype(fork)) then Lock!th!LA.fork.((i+1)%N)!unlock -> SKIP else error!th -> STOP) ;
+    SKIP );
+    tmpProc_1()
+  ) within tmpProc_1()
+)
+LPhil(i,th) = (
+  let tmpProc_1() = (
+    ((if member((i+1)%N,itype(fork)) then Lock!th!LA.fork.((i+1)%N)!lock -> SKIP else error!th -> STOP) ;
+    (if member(i,itype(fork)) then Lock!th!LA.fork.i!lock -> SKIP else error!th -> STOP) ;
+    (eats!i -> SKIP) ;
+    (if member((i+1)%N,itype(fork)) then Lock!th!LA.fork.((i+1)%N)!unlock -> SKIP else error!th -> STOP) ;
+    (if member(i,itype(fork)) then Lock!th!LA.fork.i!unlock -> SKIP else error!th -> STOP) ;
+    SKIP );
+    tmpProc_1()
+  ) within tmpProc_1()
+)
+
+channel eats : AllInts
+Signals = {| eats |}
+
+mostproc = 4
+
+
+sigSet(1,1) = {|eats.0|}
+sigSet(1,2) = {|eats.1|}
+sigSet(1,3) = {|eats.2|}
+sigSet(1,4) = {|eats.3|}
+sigSet(2,1) = {|eats.0|}
+sigSet(2,2) = {|eats.1|}
+sigSet(2,3) = {|eats.2|}
+sigSet(2,4) = {|eats.3|}
+
+ReadVars(1,1) = {}
+ReadVars(1,2) = {}
+ReadVars(1,3) = {}
+ReadVars(1,4) = {}
+ReadVars(2,1) = {}
+ReadVars(2,2) = {}
+ReadVars(2,3) = {}
+ReadVars(2,4) = {}
+
+WriteVars(1,1) = {}
+WriteVars(1,2) = {}
+WriteVars(1,3) = {}
+WriteVars(1,4) = {}
+WriteVars(2,1) = {}
+WriteVars(2,2) = {}
+WriteVars(2,3) = {}
+WriteVars(2,4) = {}
+
+Prog1_sub(<>) = ProgList.(<Prog1_sub(<1>),Prog1_sub(<2>),Prog1_sub(<3>),Prog1_sub(<4>)>)
+Prog1_sub(<1>) = ProgNode.(Prog1_sub(<1,1>),<>)
+Prog1_sub(<1,1>) = ProgNode.(ProgLeaf.(RPhil(0, 1),1),<>)
+Prog1_sub(<2>) = ProgNode.(Prog1_sub(<2,1>),<>)
+Prog1_sub(<2,1>) = ProgNode.(ProgLeaf.(RPhil(1, 2),2),<>)
+Prog1_sub(<3>) = ProgNode.(Prog1_sub(<3,1>),<>)
+Prog1_sub(<3,1>) = ProgNode.(ProgLeaf.(RPhil(2, 3),3),<>)
+Prog1_sub(<4>) = ProgNode.(Prog1_sub(<4,1>),<>)
+Prog1_sub(<4,1>) = ProgNode.(ProgLeaf.(RPhil(3, 4),4),<>)
+
+Prog1 = (ProgramRun(Prog1_sub(<>), Thread, True, 1) [|AllLockEvts|] Lock_Chans) \ Union({AllAtomicSet, AllLockEvts, chans})
+
+Prog2_sub(<>) = ProgList.(<Prog2_sub(<1>),Prog2_sub(<2>),Prog2_sub(<3>),Prog2_sub(<4>)>)
+Prog2_sub(<1>) = ProgNode.(Prog2_sub(<1,1>),<>)
+Prog2_sub(<1,1>) = ProgNode.(ProgLeaf.(LPhil(0, 1),1),<>)
+Prog2_sub(<2>) = ProgNode.(Prog2_sub(<2,1>),<>)
+Prog2_sub(<2,1>) = ProgNode.(ProgLeaf.(RPhil(1, 2),2),<>)
+Prog2_sub(<3>) = ProgNode.(Prog2_sub(<3,1>),<>)
+Prog2_sub(<3,1>) = ProgNode.(ProgLeaf.(RPhil(2, 3),3),<>)
+Prog2_sub(<4>) = ProgNode.(Prog2_sub(<4,1>),<>)
+Prog2_sub(<4,1>) = ProgNode.(ProgLeaf.(RPhil(3, 4),4),<>)
+
+Prog2 = (ProgramRun(Prog2_sub(<>), Thread, True, 2) [|AllLockEvts|] Lock_Chans) \ Union({AllAtomicSet, AllLockEvts, chans})
+
+assert STOP [T= Prog1 \ Signals 
+assert STOP [T= Prog2 \ Signals 
+assert Eaten(N) [T= Prog1 
+assert Eaten(N) [T= Prog2 

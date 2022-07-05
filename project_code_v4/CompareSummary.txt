@@ -1,0 +1,610 @@
+bakery10:
+Status: Failed
+Compiled in 0.23s
+Checked in 0.45s
+States: Visited 33,248 over 70 plys at 73,233 states/second (228 minutes/gigastate)
+Transitions: Visited 119,066 at 262,260 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 132 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+
+Status: Failed
+Compiled in 0.31s
+Checked in 0.57s
+States: Visited 33,248 over 70 plys at 58,024 states/second (287 minutes/gigastate)
+Transitions: Visited 119,066 at 207,794 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 134 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+***********************************************************************************************
+
+bakery1simp:
+Status: Failed
+Compiled in 0.41s
+Checked in 0.39s
+States: Visited 18,948 over 78 plys at 48,091 states/second (347 minutes/gigastate)
+Transitions: Visited 73,476 at 186,487 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 81 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+
+Status: Failed
+Compiled in 0.58s
+Checked in 0.51s
+States: Visited 18,948 over 78 plys at 37,373 states/second (446 minutes/gigastate)
+Transitions: Visited 73,476 at 144,923 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 82 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+***********************************************************************************************
+
+bakery22
+
+bakery22.csp> :statistics 0
+Status: Passed
+Compiled in 0.45s
+Checked in 0.53s
+States: Visited 13,589 over 25 plys at 25,495 states/second (654 minutes/gigastate)
+Transitions: Visited 49,031 at 91,991 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 59 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+bakery22.csp> :statistics 1
+Status: Passed
+Compiled in 0.35s
+Checked in 0.53s
+States: Visited 23,643 over 25 plys at 44,442 states/second (375 minutes/gigastate)
+Transitions: Visited 91,360 at 171,729 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 96 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+bakery22.csp> :statistics 2
+Status: Passed
+Compiled in 0.34s
+Checked in 0.54s
+States: Visited 23,643 over 25 plys at 43,865 states/second (380 minutes/gigastate)
+Transitions: Visited 91,360 at 169,499 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 96 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+bakery22.csp> :statistics 3
+Status: Passed
+Compiled in 0.32s
+Checked in 0.54s
+States: Visited 35,190 over 28 plys at 65,653 states/second (254 minutes/gigastate)
+Transitions: Visited 134,886 at 251,653 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 138 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+output.csp> :statistics 0
+Status: Passed
+Compiled in 0.57s
+Checked in 0.64s
+States: Visited 13,589 over 25 plys at 21,134 states/second (789 minutes/gigastate)
+Transitions: Visited 49,031 at 76,253 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 57 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+output.csp> :statistics 1
+Status: Passed
+Compiled in 0.48s
+Checked in 0.59s
+States: Visited 23,643 over 25 plys at 40,141 states/second (415 minutes/gigastate)
+Transitions: Visited 91,360 at 155,110 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 90 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+output.csp> :statistics 2
+Status: Passed
+Compiled in 0.55s
+Checked in 0.59s
+States: Visited 23,643 over 25 plys at 40,209 states/second (414 minutes/gigastate)
+Transitions: Visited 91,360 at 155,374 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 92 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+output.csp> :statistics 3
+Status: Passed
+Compiled in 6.56s
+Checked in 0.59s
+States: Visited 35,190 over 28 plys at 59,644 states/second (279 minutes/gigastate)
+Transitions: Visited 134,886 at 228,620 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 136 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+***********************************************************************************************
+
+bakery23
+
+Status: Failed
+Compiled in 11.90s
+Checked in 79.19s
+States: Visited 50,275,316 over 44 plys at 634,886 states/second (26 minutes/gigastate)
+Transitions: Visited 300,312,050 at 3,792,393 transitions/second
+Total Storage: 134 MB cache, 476 MB compressed, 1.46 GB raw (0.33), 179,376 blocks
+Requires 28 bytes per state (9.12 GB per gigastate)
+
+Status: Failed
+Compiled in 21.73s
+Checked in 90.38s
+States: Visited 53,147,556 over 44 plys at 588,065 states/second (28 minutes/gigastate)
+Transitions: Visited 318,065,137 at 3,519,315 transitions/second
+Total Storage: 134 MB cache, 515 MB compressed, 1.55 GB raw (0.33), 189,865 blocks
+Requires 28 bytes per state (9.30 GB per gigastate)
+
+
+***********************************************************************************************
+
+bakery2simp2
+
+bakery2simp2.csp> :statistics 0
+Status: Passed
+Compiled in 0.51s
+Checked in 0.52s
+States: Visited 22,833 over 109 plys at 43,658 states/second (382 minutes/gigastate)
+Transitions: Visited 87,166 at 166,665 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 83 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+bakery2simp2.csp> :statistics 1
+Status: Passed
+Compiled in 0.40s
+Checked in 0.69s
+States: Visited 74,337 over 117 plys at 106,960 states/second (156 minutes/gigastate)
+Transitions: Visited 336,091 at 483,584 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 276 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+bakery2simp2.csp> :statistics 2
+Status: Passed
+Compiled in 0.45s
+Checked in 0.55s
+States: Visited 74,337 over 117 plys at 135,651 states/second (123 minutes/gigastate)
+Transitions: Visited 336,091 at 613,305 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 275 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+bakery2simp2.csp> :statistics 3
+Status: Failed
+Compiled in 0.58s
+Checked in 0.56s
+States: Visited 5,814 over 16 plys at 10,327 states/second (1,614 minutes/gigastate)
+Transitions: Visited 24,373 at 43,291 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 27 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+vs
+
+output.csp> :statistics 0
+Status: Passed
+Compiled in 0.59s
+Checked in 0.57s
+States: Visited 22,833 over 109 plys at 39,848 states/second (418 minutes/gigastate)
+Transitions: Visited 87,166 at 152,122 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 82 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+output.csp> :statistics 1
+Status: Passed
+Compiled in 0.53s
+Checked in 0.58s
+States: Visited 74,337 over 117 plys at 128,611 states/second (130 minutes/gigastate)
+Transitions: Visited 336,091 at 581,472 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 260 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+output.csp> :statistics 2
+Status: Passed
+Compiled in 0.79s
+Checked in 0.70s
+States: Visited 74,337 over 117 plys at 106,196 states/second (157 minutes/gigastate)
+Transitions: Visited 336,091 at 480,130 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 271 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+output.csp> :statistics 3
+Status: Failed
+Compiled in 6.89s
+Checked in 0.45s
+States: Visited 5,803 over 16 plys at 12,782 states/second (1,304 minutes/gigastate)
+Transitions: Visited 24,313 at 53,553 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 27 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+***********************************************************************************************
+
+dbakery
+
+Status: Failed
+Compiled in 0.26s
+Checked in 0.53s
+States: Visited 304 over 4 plys at 579 states/second (28,783 minutes/gigastate)
+Transitions: Visited 2,079 at 3,960 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+Status: Failed
+Compiled in 0.34s
+Checked in 0.63s
+States: Visited 304 over 4 plys at 486 states/second (34,320 minutes/gigastate)
+Transitions: Visited 2,079 at 3,321 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+
+***********************************************************************************************
+
+dbakerysimp
+
+Status: Failed
+Compiled in 0.45s
+Checked in 0.45s
+States: Visited 570 over 2 plys at 1,267 states/second (13,158 minutes/gigastate)
+Transitions: Visited 9,283 at 20,629 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+
+Status: Failed
+Compiled in 0.31s
+Checked in 0.56s
+States: Visited 304 over 4 plys at 539 states/second (30,921 minutes/gigastate)
+Transitions: Visited 2,079 at 3,686 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+***********************************************************************************************
+
+ddekker
+
+Status: Passed
+Compiled in 0.02s
+Checked in 0.53s
+States: Visited 16 over 7 plys at 30 states/second (550,000 minutes/gigastate)
+Transitions: Visited 40 at 76 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+Status: Passed
+Compiled in 0.02s
+Checked in 0.55s
+States: Visited 55 over 9 plys at 101 states/second (165,455 minutes/gigastate)
+Transitions: Visited 267 at 489 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+
+***********************************************************************************************
+
+dknuth
+
+Status: Passed
+Compiled in 0.06s
+Checked in 0.48s
+States: Visited 81 over 16 plys at 169 states/second (98,765 minutes/gigastate)
+Transitions: Visited 320 at 667 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+Status: Passed
+Compiled in 0.03s
+Checked in 0.56s
+States: Visited 29 over 7 plys at 52 states/second (323,563 minutes/gigastate)
+Transitions: Visited 77 at 137 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+***********************************************************************************************
+
+dpeterson
+
+Status: Failed
+Compiled in 0.04s
+Checked in 0.49s
+States: Visited 5 over 1 plys at 10 states/second (1,630,000 minutes/gigastate)
+Transitions: Visited 15 at 31 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+Status: Failed
+Compiled in 0.03s
+Checked in 0.56s
+States: Visited 5 over 1 plys at 9 states/second (1,876,667 minutes/gigastate)
+Transitions: Visited 13 at 23 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+***********************************************************************************************
+
+dekker
+
+Status: Passed
+Compiled in 0.02s
+Checked in 0.56s
+States: Visited 16 over 8 plys at 29 states/second (584,375 minutes/gigastate)
+Transitions: Visited 41 at 73 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+Status: Passed
+Compiled in 0.02s
+Checked in 0.56s
+States: Visited 60 over 9 plys at 108 states/second (154,722 minutes/gigastate)
+Transitions: Visited 290 at 521 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+***********************************************************************************************
+
+hyman
+
+Status: Failed
+Compiled in 0.03s
+Checked in 0.55s
+States: Visited 29 over 7 plys at 52 states/second (318,391 minutes/gigastate)
+Transitions: Visited 61 at 110 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+Status: Failed
+Compiled in 0.02s
+Checked in 0.55s
+States: Visited 46 over 6 plys at 83 states/second (200,362 minutes/gigastate)
+Transitions: Visited 104 at 188 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+
+***********************************************************************************************
+
+knuth
+
+Status: Passed
+Compiled in 0.04s
+Checked in 0.52s
+States: Visited 95 over 15 plys at 183 states/second (91,228 minutes/gigastate)
+Transitions: Visited 271 at 521 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+Status: Passed
+Compiled in 0.03s
+Checked in 0.48s
+States: Visited 12 over 6 plys at 25 states/second (672,222 minutes/gigastate)
+Transitions: Visited 24 at 50 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+***********************************************************************************************
+
+knuthtest
+
+***********************************************************************************************
+
+peterson
+
+Status: Passed
+Compiled in 0.03s
+Checked in 0.56s
+States: Visited 34 over 10 plys at 60 states/second (276,471 minutes/gigastate)
+Transitions: Visited 86 at 152 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+Status: Passed
+Compiled in 0.02s
+Checked in 0.56s
+States: Visited 34 over 9 plys at 60 states/second (275,490 minutes/gigastate)
+Transitions: Visited 84 at 149 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+***********************************************************************************************
+
+petersonN
+
+WideStruct
+Status: Passed
+Compiled in 302.23s
+Checked in 0.37s
+States: Visited 373,345 over 64 plys at 1,011,775 states/second (16 minutes/gigastate)
+Transitions: Visited 1,681,482 at 4,556,862 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 1,332 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+***********************************************************************************************
+
+simpson
+
+Status: Passed
+Compiled in 0.07s
+Checked in 0.62s
+States: Visited 235 over 12 plys at 381 states/second (43,688 minutes/gigastate)
+Transitions: Visited 1,043 at 1,693 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+Status: Passed
+Compiled in 0.07s
+Checked in 0.67s
+States: Visited 243 over 12 plys at 362 states/second (46,091 minutes/gigastate)
+Transitions: Visited 1,131 at 1,683 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+***********************************************************************************************
+
+simpson2
+
+Status: Failed
+Compiled in 0.16s
+Checked in 0.67s
+States: Visited 929 over 11 plys at 1,382 states/second (12,056 minutes/gigastate)
+Transitions: Visited 3,539 at 5,266 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+Status: Failed
+Compiled in 0.17s
+Checked in 0.76s
+States: Visited 951 over 11 plys at 1,248 states/second (13,354 minutes/gigastate)
+Transitions: Visited 3,722 at 4,885 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+***********************************************************************************************
+
+simpson3
+
+Status: Passed
+Compiled in 0.17s
+Checked in 0.69s
+States: Visited 24,564 over 40 plys at 35,548 states/second (469 minutes/gigastate)
+Transitions: Visited 97,764 at 141,482 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 95 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+Status: Passed
+Compiled in 0.21s
+Checked in 0.81s
+States: Visited 24,852 over 40 plys at 30,644 states/second (544 minutes/gigastate)
+Transitions: Visited 101,316 at 124,927 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 93 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+***********************************************************************************************
+
+simpson4
+
+
+Status: Failed
+Compiled in 0.19s
+Checked in 0.68s
+States: Visited 223 over 8 plys at 327 states/second (51,046 minutes/gigastate)
+Transitions: Visited 667 at 977 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+Status: Failed
+Compiled in 0.18s
+Checked in 0.81s
+States: Visited 235 over 8 plys at 291 states/second (57,305 minutes/gigastate)
+Transitions: Visited 755 at 934 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+***********************************************************************************************
+
+simpson5
+
+Status: Failed
+Compiled in 1.45s
+Checked in 0.07s
+States: Visited 4,662 over 15 plys at 63,000 states/second (265 minutes/gigastate)
+Transitions: Visited 16,182 at 218,676 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 24 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+Status: Failed
+Compiled in 2.17s
+Checked in 0.21s
+States: Visited 5,586 over 15 plys at 26,600 states/second (627 minutes/gigastate)
+Transitions: Visited 19,154 at 91,210 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 28 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+***********************************************************************************************
+
+sphils.svl
+
+svphil.csp> :statistics 0
+Status: Passed
+Compiled in 0.29s
+Checked in 0.70s
+States: Visited 7,381 over 35 plys at 10,574 states/second (1,576 minutes/gigastate)
+Transitions: Visited 27,917 at 39,996 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 36 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+svphil.csp> :statistics 1
+Status: Passed
+Compiled in 0.04s
+Checked in 0.24s
+States: Visited 5,171 over 35 plys at 21,280 states/second (783 minutes/gigastate)
+Transitions: Visited 18,692 at 76,922 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 25 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+svphil.csp> :statistics 2
+Status: Passed
+Compiled in 0.08s
+Checked in 0.23s
+States: Visited 18,552 over 47 plys at 81,013 states/second (206 minutes/gigastate)
+Transitions: Visited 72,197 at 315,271 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 76 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+svphil.csp> :statistics 6
+Status: Failed
+Compiled in 0.00s
+Checked in 0.28s
+States: Visited 9,823 over 28 plys at 34,957 states/second (477 minutes/gigastate)
+Transitions: Visited 34,950 at 124,377 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 40 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+svphil.csp> :statistics 7
+Status: Failed
+Compiled in 0.01s
+Checked in 0.27s
+States: Visited 41,807 over 41 plys at 153,139 states/second (109 minutes/gigastate)
+Transitions: Visited 161,783 at 592,612 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 159 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+vs
+
+svphils.csp> :statistics 1
+Status: Passed
+Compiled in 0.04s
+Checked in 0.30s
+States: Visited 138 over 14 plys at 463 states/second (35,990 minutes/gigastate)
+Transitions: Visited 367 at 1,232 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+svphils.csp> :statistics 2
+Status: Passed
+Compiled in 0.02s
+Checked in 0.35s
+States: Visited 138 over 14 plys at 390 states/second (42,754 minutes/gigastate)
+Transitions: Visited 367 at 1,037 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+svphils.csp> :statistics 3
+Status: Failed
+Compiled in 0.00s
+Checked in 0.41s
+States: Visited 438 over 20 plys at 1,055 states/second (15,791 minutes/gigastate)
+Transitions: Visited 1,163 at 2,802 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+svphils.csp> :statistics 6
+Status: Passed
+Compiled in 0.02s
+Checked in 0.29s
+States: Visited 2 over 2 plys at 7 states/second (2,400,000 minutes/gigastate)
+Transitions: Visited 7 at 24 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+svphils.csp> :statistics 7
+Status: Passed
+Compiled in 0.01s
+Checked in 0.32s
+States: Visited 2 over 2 plys at 6 states/second (2,691,667 minutes/gigastate)
+Transitions: Visited 7 at 22 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+svphils.csp> :statistics 8
+Status: Passed
+Compiled in 0.01s
+Checked in 0.30s
+States: Visited 2 over 2 plys at 7 states/second (2,541,667 minutes/gigastate)
+Transitions: Visited 7 at 23 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)

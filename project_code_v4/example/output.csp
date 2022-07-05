@@ -1,0 +1,198 @@
+include "Helper2.csp"
+
+datatype Var = PP_j | PP_temp
+datatype Arr = number | choosing
+
+ivnums = {PP_j, PP_temp}
+ianums = {number}
+bvnums :: {Var}
+bvnums = {}
+banums = {choosing}
+lvnums :: {Var}
+lvnums = {}
+lanums :: {Arr}
+lanums = {}
+
+DirtyVars = Union({})
+
+
+itype(_) = ditype
+
+ctypeMap = (<>,<>)
+initIMap = (<>,<>)
+initBMap = (<>,<>)
+
+MinI = 0
+MaxI = 10
+InitI = 0
+ditype = {1,2,3}
+dctype = {0,1,2,3,4,5,6,7,8,9,10}
+N = 3
+ext_atomic = false
+InitB = false
+LockOrder = <>
+CheckLockOrder = false
+SPEC =  css?i -> cse!i -> SPEC
+
+needVarAt = false
+
+PP(i,th) = (
+  let tmpProc_6() = (
+    ((SKIP) ;
+    (if member(i,itype(choosing)) then bvwrite!th!BA.choosing.i!true -> SKIP else error!th -> STOP) ;
+    (if member(0,ctype(IV.PP_temp)) then ivwrite!th!IV.PP_temp!0 -> SKIP else error!th -> STOP) ;
+    (if member(1,ctype(IV.PP_j)) then ivwrite!th!IV.PP_j!1 -> SKIP else error!th -> STOP) ;
+    (let tmpProc_1() = (
+      iveval!th!IV.PP_j?PP_jVal_1 -> (
+        if (PP_jVal_1) <= (N)
+        then (
+          ((iveval!th!IV.PP_temp?PP_tempVal_1 -> iveval!th!IV.PP_j?PP_jVal_2 -> (
+            if member(PP_jVal_2,itype(number))
+            then (
+              iveval!th!IA.number.PP_jVal_2?numberVal_1 -> (
+                if member((max(PP_tempVal_1, numberVal_1)),ctype(IV.PP_temp)) then ivwrite!th!IV.PP_temp!(max(PP_tempVal_1, numberVal_1)) -> SKIP else error!th -> STOP
+              )
+            ) else error!th -> STOP
+          ) );
+          iveval!th!IV.PP_j?PP_jVal_3 -> (
+            if member((PP_jVal_3+1),ctype(IV.PP_j)) then ivwrite!th!IV.PP_j!(PP_jVal_3+1) -> SKIP else error!th -> STOP
+          ) );
+          tmpProc_1()
+        ) else SKIP
+      )
+    ) within tmpProc_1() );
+    (iveval!th!IV.PP_temp?PP_tempVal_2 -> (
+      if member(i,itype(number)) then if member((PP_tempVal_2+1),ctype(IA.number.i)) then ivwrite!th!IA.number.i!(PP_tempVal_2+1) -> SKIP else error!th -> STOP else error!th -> STOP
+    ) );
+    (if member(i,itype(choosing)) then bvwrite!th!BA.choosing.i!false -> SKIP else error!th -> STOP) ;
+    (if member(1,ctype(IV.PP_j)) then ivwrite!th!IV.PP_j!1 -> SKIP else error!th -> STOP) ;
+    (let tmpProc_2() = (
+      iveval!th!IV.PP_j?PP_jVal_4 -> (
+        if (PP_jVal_4) <= (N)
+        then (
+          ((let tmpProc_3() = (
+            iveval!th!IV.PP_j?PP_jVal_5 -> (
+              if member(PP_jVal_5,itype(choosing))
+              then (
+                bveval!th!BA.choosing.PP_jVal_5?choosingVal_1 -> (
+                  if choosingVal_1
+                  then (
+                    (SKIP) ;
+                    tmpProc_3()
+                  ) else SKIP
+                )
+              ) else error!th -> STOP
+            )
+          ) within tmpProc_3() );
+          (iveval!th!IV.PP_j?PP_jVal_6 -> (
+            if (PP_jVal_6) >= (i)
+            then (
+              let tmpProc_4() = (
+                iveval!th!IV.PP_j?PP_jVal_7 -> (
+                  if member(PP_jVal_7,itype(number))
+                  then (
+                    iveval!th!IA.number.PP_jVal_7?numberVal_2 -> (
+                      if member(i,itype(number))
+                      then (
+                        iveval!th!IA.number.i?numberVal_3 -> (
+                          if ((numberVal_2) > (0)) and ((numberVal_2) < (numberVal_3))
+                          then (
+                            (SKIP) ;
+                            tmpProc_4()
+                          ) else SKIP
+                        )
+                      ) else error!th -> STOP
+                    )
+                  ) else error!th -> STOP
+                )
+              ) within tmpProc_4()
+            )
+            else (
+              let tmpProc_5() = (
+                iveval!th!IV.PP_j?PP_jVal_8 -> (
+                  if member(PP_jVal_8,itype(number))
+                  then (
+                    iveval!th!IA.number.PP_jVal_8?numberVal_4 -> (
+                      if member(i,itype(number))
+                      then (
+                        iveval!th!IA.number.i?numberVal_5 -> (
+                          if ((numberVal_4) > (0)) and ((numberVal_4) <= (numberVal_5))
+                          then (
+                            (SKIP) ;
+                            tmpProc_5()
+                          ) else SKIP
+                        )
+                      ) else error!th -> STOP
+                    )
+                  ) else error!th -> STOP
+                )
+              ) within tmpProc_5()
+            )
+          ) );
+          (iveval!th!IV.PP_j?PP_jVal_9 -> (
+            if member((PP_jVal_9+1),ctype(IV.PP_j)) then ivwrite!th!IV.PP_j!(PP_jVal_9+1) -> SKIP else error!th -> STOP
+          ) );
+          SKIP );
+          tmpProc_2()
+        ) else SKIP
+      )
+    ) within tmpProc_2() );
+    (css!i -> SKIP) ;
+    (cse!i -> SKIP) ;
+    (if member(i,itype(number)) then if member(0,ctype(IA.number.i)) then ivwrite!th!IA.number.i!0 -> SKIP else error!th -> STOP else error!th -> STOP) ;
+    SKIP );
+    tmpProc_6()
+  ) within tmpProc_6()
+)
+
+channel css : AllInts
+channel cse : AllInts
+Signals = {| css,cse |}
+
+mostproc = 3
+
+
+sigSet(1,1) = {|css.3,cse.3|}
+sigSet(1,2) = {|css.2,cse.2|}
+sigSet(1,3) = {|css.1,cse.1|}
+sigSet(2,1) = {|css.1,cse.1|}
+sigSet(2,2) = {|css.2,cse.2|}
+sigSet(2,3) = {|css.3,cse.3|}
+
+ReadVars(1,1) = {BA.choosing.1,BA.choosing.2,BA.choosing.3,IA.number.1,IA.number.2,IA.number.3,IA.number.3}
+ReadVars(1,2) = {BA.choosing.1,BA.choosing.2,BA.choosing.3,IA.number.1,IA.number.2,IA.number.3,IA.number.2}
+ReadVars(1,3) = {BA.choosing.1,BA.choosing.2,BA.choosing.3,IA.number.1,IA.number.2,IA.number.3,IA.number.1}
+ReadVars(2,1) = {BA.choosing.1,BA.choosing.2,BA.choosing.3,IA.number.1,IA.number.2,IA.number.3,IA.number.1}
+ReadVars(2,2) = {BA.choosing.1,BA.choosing.2,BA.choosing.3,IA.number.1,IA.number.2,IA.number.3,IA.number.2}
+ReadVars(2,3) = {BA.choosing.1,BA.choosing.2,BA.choosing.3,IA.number.1,IA.number.2,IA.number.3,IA.number.3}
+
+WriteVars(1,1) = {BA.choosing.3,IA.number.3}
+WriteVars(1,2) = {BA.choosing.2,IA.number.2}
+WriteVars(1,3) = {BA.choosing.1,IA.number.1}
+WriteVars(2,1) = {BA.choosing.1,IA.number.1}
+WriteVars(2,2) = {BA.choosing.2,IA.number.2}
+WriteVars(2,3) = {BA.choosing.3,IA.number.3}
+
+WideStruct_sub(<>) = ProgList.(<WideStruct_sub(<1>),WideStruct_sub(<2>),WideStruct_sub(<3>)>)
+WideStruct_sub(<1>) = ProgNode.(WideStruct_sub(<1,1>),<VS.(BA.choosing.3,NoTh),VS.(IA.number.3,NoTh)>)
+WideStruct_sub(<1,1>) = ProgNode.(ProgLeaf.(PP(3, 1),1),<VS.(IV.PP_j,YesTh.1),VS.(IV.PP_temp,YesTh.1)>)
+WideStruct_sub(<2>) = ProgNode.(WideStruct_sub(<2,1>),<VS.(BA.choosing.2,NoTh),VS.(IA.number.2,NoTh)>)
+WideStruct_sub(<2,1>) = ProgNode.(ProgLeaf.(PP(2, 2),2),<VS.(IV.PP_j,YesTh.2),VS.(IV.PP_temp,YesTh.2)>)
+WideStruct_sub(<3>) = ProgNode.(WideStruct_sub(<3,1>),<VS.(BA.choosing.1,NoTh),VS.(IA.number.1,NoTh)>)
+WideStruct_sub(<3,1>) = ProgNode.(ProgLeaf.(PP(1, 3),3),<VS.(IV.PP_j,YesTh.3),VS.(IV.PP_temp,YesTh.3)>)
+
+WideStruct = (ProgramRun(WideStruct_sub(<>), Thread, True, 1) [|AllLockEvts|] Lock_Chans) \ Union({AllAtomicSet, AllLockEvts, chans})
+
+WideStructUncompressed_sub(<>) = ProgList.(<WideStructUncompressed_sub(<1>),WideStructUncompressed_sub(<2>),WideStructUncompressed_sub(<3>)>)
+WideStructUncompressed_sub(<1>) = ProgNode.(WideStructUncompressed_sub(<1,1>),<VS.(BA.choosing.1,NoTh),VS.(IA.number.1,NoTh)>)
+WideStructUncompressed_sub(<1,1>) = ProgNode.(ProgLeaf.(PP(1, 1),1),<VS.(IV.PP_j,YesTh.1),VS.(IV.PP_temp,YesTh.1)>)
+WideStructUncompressed_sub(<2>) = ProgNode.(WideStructUncompressed_sub(<2,1>),<VS.(BA.choosing.2,NoTh),VS.(IA.number.2,NoTh)>)
+WideStructUncompressed_sub(<2,1>) = ProgNode.(ProgLeaf.(PP(2, 2),2),<VS.(IV.PP_j,YesTh.2),VS.(IV.PP_temp,YesTh.2)>)
+WideStructUncompressed_sub(<3>) = ProgNode.(WideStructUncompressed_sub(<3,1>),<VS.(BA.choosing.3,NoTh),VS.(IA.number.3,NoTh)>)
+WideStructUncompressed_sub(<3,1>) = ProgNode.(ProgLeaf.(PP(3, 3),3),<VS.(IV.PP_j,YesTh.3),VS.(IV.PP_temp,YesTh.3)>)
+
+WideStructUncompressed = (ProgramRun(WideStructUncompressed_sub(<>), Thread, True, 2) [|AllLockEvts|] Lock_Chans) \ Union({AllAtomicSet, AllLockEvts, chans})
+
+assert STOP [T= WideStruct \{|css,cse|} 
+assert SPEC [T= WideStruct \{|error,verror|} 
+assert SPEC [T= WideStructUncompressed \{|error,verror|} 

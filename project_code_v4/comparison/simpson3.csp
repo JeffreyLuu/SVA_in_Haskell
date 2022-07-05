@@ -1,0 +1,44 @@
+include "refsva.csp"
+
+channel assertionfailed
+channel wrongval
+Signals = {| assertionfailed, wrongval|}
+
+ISignals :: {Int=>Event}
+ISignals = Union ({})
+ivnums = {1..11}
+bvnums = {1..1}
+ianums = {1..2}
+banums = {1..1}
+DirtyVars = Union({{IA.2.x | x <- ditype },{IV.2},{IV.3},{IV.1},{IA.1.x | x <- {0..3}}})
+ctypes = <>
+catypes = <>
+itypes = <(IA.1, {0..3})>
+init = (<>,<>)
+LocalIVarMapping_Reader_outp() = IV.8
+LocalIVarMapping_Reader_rindex() = IV.7
+LocalIVarMapping_Reader_rpair() = IV.6
+LocalIVarMapping_Writer_inp() = IV.11
+LocalIVarMapping_Writer_windex() = IV.10
+LocalIVarMapping_Writer_wpair() = IV.9
+ParReads = Union({})
+ParWrites = Union({})
+SeqReads = Union({})
+SeqWrites = Union({})
+
+mostprocs = 3
+ext_atomic=false
+MinI = 0
+MaxI = 4
+InitB = false
+InitI = 0
+ditype = {0,1}
+dctype = {0,1}
+Rand() = (Iter.Iassign.(IVar.IV.3,Const.0)
+, (Union({{}}),Union({{}})))
+Reader() = (Iter.Sq.(Bassign.(BArc.(BA.1,Const.0),False),Sq.(Bassign.(BArc.(BA.1,Const.1),False),Sq.(Bassign.(BArc.(BA.1,IVar.IV.4),True),Sq.(Bassign.(BArc.(BA.1,IVar.IV.5),True),Sq.(Iassign.(IVar.LocalIVarMapping_Reader_rpair(),BIOp.Mod.IVar.IV.2.Const.2),Sq.(Cond.(CompOp.Eq.IVar.IV.1.IVar.LocalIVarMapping_Reader_rpair(),Skip,Iassign.(IVar.IV.1,IVar.LocalIVarMapping_Reader_rpair())),Sq.(Iassign.(IVar.LocalIVarMapping_Reader_rindex(),BIOp.Mod.IArc.(IA.2,IVar.LocalIVarMapping_Reader_rpair()).Const.2),Sq.(Iassign.(IVar.LocalIVarMapping_Reader_outp(),IArc.(IA.1,BIOp.Plus.BIOp.Times.Const.2.IVar.LocalIVarMapping_Reader_rpair().IVar.LocalIVarMapping_Reader_rindex())),Cond.(BArc.(BA.1,IVar.LocalIVarMapping_Reader_outp()),Skip,Sig.wrongval)))))))))
+, (Union({{IVar.LocalIVarMapping_Reader_rpair(),IVar.LocalIVarMapping_Reader_rindex(),IVar.LocalIVarMapping_Reader_outp()}}),Union({{}})))
+Writer() = (Iter.Sq.(Iassign.(IVar.LocalIVarMapping_Writer_inp(),BIOp.Mod.IVar.IV.3.Const.2),Sq.(Iassign.(IVar.IV.4,IVar.LocalIVarMapping_Writer_inp()),Sq.(Bassign.(BArc.(BA.1,IVar.IV.4),True),Sq.(Iassign.(IVar.LocalIVarMapping_Writer_wpair(),BIOp.Minus.Const.1.BIOp.Mod.IVar.IV.1.Const.2),Sq.(Iassign.(IVar.LocalIVarMapping_Writer_windex(),BIOp.Minus.Const.1.IArc.(IA.2,IVar.LocalIVarMapping_Writer_wpair())),Sq.(Iassign.(IArc.(IA.1,BIOp.Plus.BIOp.Times.Const.2.IVar.LocalIVarMapping_Writer_wpair().IVar.LocalIVarMapping_Writer_windex()),IVar.IV.4),Sq.(Cond.(CompOp.Eq.IArc.(IA.2,IVar.LocalIVarMapping_Writer_wpair()).IVar.LocalIVarMapping_Writer_windex(),Skip,Iassign.(IArc.(IA.2,IVar.LocalIVarMapping_Writer_wpair()),IVar.LocalIVarMapping_Writer_windex())),Sq.(Cond.(CompOp.Eq.IVar.IV.2.IVar.LocalIVarMapping_Writer_wpair(),Skip,Iassign.(IVar.IV.2,IVar.LocalIVarMapping_Writer_wpair())),Iassign.(IVar.IV.5,IVar.IV.4)))))))))
+, (Union({{IVar.LocalIVarMapping_Writer_wpair(),IVar.LocalIVarMapping_Writer_windex(),IVar.LocalIVarMapping_Writer_inp()}}),Union({{}})))
+WideStruct = HierarchCompressedCompile(CSNode.<CSLeaf.Rand(),CSLeaf.Reader(),CSLeaf.Writer()>) ({| c | c <-Union({Signals,ISignals',Errors}) |})
+assert  STOP [T= WideStruct 

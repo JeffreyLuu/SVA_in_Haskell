@@ -1,0 +1,321 @@
+-- compression functions
+transparent sbisim, diamond, normal, wbisim
+sbdia(P) = sbisim(diamond(P))
+-- compress = sbdia
+compress = sbdia
+
+-- for variables
+datatype namestype = IV.Var | IA.Arr.Int
+                   | BV.Var | BA.Arr.Int
+                   | LV.Var | LA.Arr.Int | NonVar
+
+ivnames = union({IV.vv | vv <- ivnums}, {IA.aa.jj | aa <- ianums, jj <- itype(aa)})
+bvnames = union({BV.vv | vv <- bvnums}, {BA.aa.jj | aa <- banums, jj <- itype(aa)})
+
+channel bveval,bvwrite: Thread.bvnames.Bool
+channel iveval,ivwrite: Thread.ivnames.AllInts
+
+Thread = {1..mostproc}
+
+chans = {|bveval,bvwrite,iveval,ivwrite|}
+
+filterByFst(th) = {|bveval.th, bvwrite.th, iveval.th, ivwrite.th|}
+ThreadEvtSet(th) = filterByFst(th)
+
+IV_Chan(xx, vv, th) = let Dirty(j') = iveval?_!xx?_ -> Dirty(j') [] ivwrite?jj!xx?_ -> (if j'==jj then SKIP else verror.xx -> STOP) within
+                        if th == NoTh then iveval?_!xx!vv -> IV_Chan(xx, vv, th) [] ivwrite?j'!xx?ww -> if member(xx, DirtyVars) then (Dirty(j'); IV_Chan(xx, ww, th)) else IV_Chan(xx, ww, th)
+                            else iveval!getThId(th)!xx!vv -> IV_Chan(xx, vv, th) [] ivwrite!getThId(th)!xx?ww -> IV_Chan(xx, ww, th)
+                            
+
+BV_Chan(xx, vv, th) = let Dirty(j') = bveval?_!xx?_ -> Dirty(j') [] bvwrite?jj!xx?_ -> (if j'==jj then SKIP else verror.xx -> STOP) within
+                        if th == NoTh then bveval?_!xx!vv -> BV_Chan(xx, vv, th) [] bvwrite?j'!xx?ww -> if member(xx, DirtyVars) then (Dirty(j'); BV_Chan(xx, ww, th)) else BV_Chan(xx, ww, th)
+                            else bveval!getThId(th)!xx!vv -> BV_Chan(xx, vv, th) [] bvwrite!getThId(th)!xx?ww -> BV_Chan(xx, ww, th)
+
+BVAR_at(xx,vv) =
+           let Dirty(ii) = bveval?_!xx?_ -> Dirty(ii)
+                        [] bvwrite?jj!xx?_ -> (if ii==jj then SKIP
+                                                     else verror.xx -> STOP)
+                        [] start_at?jj ->  Dirty_at(ii,jj)
+               Dirty_at(ii,jj) = end_at.jj -> Dirty(ii)
+                               [] bveval.jj!xx?_
+                                               -> Dirty_at(ii,jj)
+                               [] bvwrite.jj!xx?_
+                                               -> verror.xx -> STOP
+            within
+            bveval?_!xx!vv -> BVAR_at(xx,vv)
+         [] bvwrite?jk!xx?ww ->(if member(xx,DirtyVars) then Dirty(jk);BVAR_at(xx,ww)
+                              else BVAR_at(xx,ww))
+         [] start_at?jj -> BVAR_inat(jj,xx,vv)
+
+IVAR_at(xx,vv) =
+          let
+          tt = ctype(xx)
+              Dirty(ii) = iveval?_!xx?yy:tt -> Dirty(ii)
+                      [] ivwrite?jj!xx?_ -> (if ii==jj then SKIP
+                                                          else verror.xx -> STOP)
+                      [] start_at?jj ->  Dirty_at(ii,jj)
+              Dirty_at(ii,jj) = end_at.jj -> Dirty(ii)
+                              [] iveval.jj!xx?_ ->
+                                                     Dirty_at(ii,jj)
+                              [] ivwrite.jj!xx?_ ->
+                                                     verror.xx -> STOP
+          within
+            iveval?_!xx!vv -> IVAR_at(xx,vv)
+         [] ivwrite?jk!xx?ww ->
+              (if member(xx,DirtyVars) then Dirty(jk);IVAR_at(xx,ww)
+                                      else IVAR_at(xx,ww))
+
+         [] start_at?jj -> IVAR_inat(jj,xx,vv)
+
+BVAR_inat(jj,xx,vv) =
+            bveval.jj!xx!vv -> BVAR_inat(jj,xx,vv)
+         [] (bvwrite.jj!xx?ww -> if member(xx,DirtyVars) then bvwrite.jj.xx?_ -> BVAR_inat(jj,xx,ww)
+                             else BVAR_inat(jj,xx,ww))
+         [] end_at.jj -> BVAR_at(xx,vv)
+
+IVAR_inat(jj,xx,vv) =
+            iveval.jj!xx!vv -> IVAR_inat(jj,xx,vv)
+         [] (ivwrite.jj!xx?ww -> if member(xx,DirtyVars) then ivwrite.jj.xx?_ -> IVAR_inat(jj,xx,ww)
+                                 else IVAR_inat(jj,xx,ww))
+         [] end_at.jj -> IVAR_at(xx,vv)
+
+
+max(cc, dd) = if cc >= dd then cc else dd
+min(cc, dd) = if cc <= dd then cc else dd
+
+datatype LockEvt = lock | unlock
+
+lnames = union({LV.xx | xx <- lvnums}, {LA.xx.jj | xx <- lanums, jj <- itype(xx)})
+
+channel Lock:Thread.lnames.LockEvt
+
+Lock_Chan(name, false) = Lock?_!name.lock -> Lock_Chan(name, true)
+Lock_Chan(name, true) = Lock?_!name.unlock -> Lock_Chan(name, false)
+-- the user needs to specify a total order for locks (default total order if not provided)
+-- and a boolean to decide whether to check the total order is valid
+
+AllLockEvts = {|Lock|}
+
+ReportLockError(th, <>) = STOP
+ReportLockError(th, <x>^xs) = lerror.th.x -> ReportLockError(th, xs)
+
+reverse(s) = if null(s) then <> else reverse(tail(s)) ^ <head(s)>
+
+-- for each individual processor, it has an monitor, which checks the locks available 
+Lock_Monitor(th, currs) =   let valid_lock(locks) = if null(currs) then set(locks) else valid_lock'(locks)
+                                valid_lock'(locks) = if head(currs)==head(locks) then set(tail(locks)) else valid_lock'(tail(locks))
+                                remove_lock(locks, to_remove) = <xx | xx <- locks, xx!=to_remove>
+                                invalid_locks(locks) = diff(set(locks), valid_lock(locks))
+                            within Lock.th?xx:valid_lock(LockOrder)!lock -> Lock_Monitor(th, <xx>^currs) 
+                                [] Lock.th?xx:set(currs)!unlock -> Lock_Monitor(th, remove_lock(currs, xx))
+                                [] Lock.th?xx:invalid_locks(LockOrder)!lock ->  ReportLockError(th, reverse(<xx>^currs))
+
+Lock_Chans = ||| xx: lnames @ Lock_Chan(xx, initB(xx))
+
+datatype Thread' = YesTh.{0..mostproc} | NoTh
+getThId(YesTh.kk) = kk
+
+channel error:pnums
+channel verror:union(ivnames,bvnames)
+channel lerror:pnums.lnames
+
+Errors = {|error,verror,lerror|}
+
+errSet(th) = {| error.th, lerror.th |}
+verrSet(xx) = {verror.xx}
+
+LocV(xx, th) = if member(xx, ivnames) then {|iveval.th.xx, ivwrite.th.xx|}
+            else if member(xx, bvnames) then {|bveval.th.xx, bvwrite.th.xx|}
+            else {}
+
+GlbV(xx) = if member(xx, ivnames) then {|iveval.th.xx, ivwrite.th.xx | th <- Thread |}
+            else if member(xx, bvnames) then {|bveval.th.xx, bvwrite.th.xx | th <- Thread |}
+            else {}
+
+
+writeSet(var) = if member(var, ivnames) then {|ivwrite.jj.var | jj <- Thread|}
+                else if member(var, bvnames) then {|bvwrite.jj.var | jj <- Thread|}
+                else {}
+
+readSet(var) = if member(var, ivnames) then {|iveval.jj.var | jj <- Thread|}
+                else if member(var, bvnames) then {|bveval.jj.var | jj <- Thread|}
+                else {}
+
+
+pnums =  {1..mostproc} 
+pnums' = { -1..mostproc-1}
+pnums'' = if ext_atomic then pnums' else pnums
+
+AllInts = {MinI..MaxI}
+
+channel start_at, end_at:Thread
+
+AtomicDummy = start_at?_ -> AtomicDummy [] end_at?_ -> AtomicDummy
+
+VarInterleave(<xx>) = xx
+VarInterleave(<xx>^xs) = xx [| AllAtomicSet|] VarInterleave(xs)
+
+VarProc(xx, th) = if member(xx, ivnames) then if (th == NoTh and needVarAt) then IVAR_at(xx, initI(xx)) else IV_Chan(xx, initI(xx), th) 
+                  else if member(xx, bvnames) then if (th == NoTh and needVarAt) then BVAR_at(xx, initB(xx)) else BV_Chan(xx, initB(xx), th)
+                  else STOP
+
+VarProc'(VS.(xx, th), bool) = if member(xx, ivnames) then if (bool and needVarAt) then IVAR_at(xx, initI(xx)) else IV_Chan(xx, initI(xx), th) 
+                  else if member(xx, bvnames) then if (bool and needVarAt) then BVAR_at(xx, initB(xx)) else BV_Chan(xx, initB(xx), th)
+                  else STOP
+
+VarProcRed(VS.(xx, th), AllThs, bool,pid) = 
+    let varProc = VarProc'(VS.(xx, th), bool)
+        notWriteTh = {th' | th' <- AllThs, not(member(xx, WriteVars(pid,th')))}
+        notReadTh = {th' | th' <- AllThs, not(member(xx, ReadVars(pid,th')))}
+        hideWrite = inter(writeSet(xx), Union({ThreadEvtSet(th') | th' <- notWriteTh}))
+        hideRead = inter(readSet(xx), Union({ThreadEvtSet(th') | th' <- notReadTh}))
+        hide = union(hideWrite, hideRead)
+    within if th == NoTh then varProc [|hide|] STOP else varProc
+
+VarRun(<>, AllThs,pid) = if needVarAt then AtomicDummy else SKIP
+VarRun(<var>^vars, AllThs,pid) = 
+    let AllWrites = Union({WriteVars(pid,th) | th<-AllThs})
+        isLocal = {th | VS.(xx,th)<-{var}} != {NoTh}
+        tailRun = VarRun(vars, AllThs,pid)
+        xx = head(<xx | VS.(xx,th)<-<var> >)
+        needAtomic = member(xx, AllWrites) and (not isLocal) and needVarAt
+    within if needAtomic then VarProcRed(var, AllThs,needAtomic,pid) [|AllAtomicSet|] tailRun else VarProcRed(var, AllThs,needAtomic,pid) ||| tailRun
+
+
+
+AtomicSet(ths) = {start_at.th, end_at.th | th <- ths}
+AllAtomicSet = {|start_at,end_at|}
+
+
+-- Program
+datatype VarStruct = VS.(namestype, Thread')
+datatype Program = ProgList.Seq(Program) | ProgNode.(Program, Seq(VarStruct)) | ProgLeaf.(Proc, Thread)
+
+
+ThSet(ProgList.xs) = if null(xs) then {} else union(ThSet(head(xs)), ThSet(ProgList.(tail(xs))))
+ThSet(ProgNode.(xx,ys)) = ThSet(xx)
+ThSet(ProgLeaf.(_, th)) = {th}
+
+VSSet(ProgList.xs) = if null(xs) then {} else union(VSSet(head(xs)),VSSet(ProgList.(tail(xs))))
+VSSet(ProgNode.(xx,ys)) = union(VSSet(xx),set(ys))
+VSSet(ProgLeaf.(_)) = {}
+
+getAllPairs(<>) = <>
+getAllPairs(<xx>^xs) = <(xx,yy) | yy <- xs>^getAllPairs(xs)
+
+SyncSet'(ProgNode.(prog, vars),pid) = 
+    let ths = ThSet(prog)
+        vss = VSSet(ProgNode.(prog, vars))
+        varSet(xx, th) = if th == NoTh then GlbV(xx) else LocV(xx, getThId(th))
+        procSets = Union({ThreadEvtSet(th) | th <- ths})
+        varSets = Union({varSet(xx, th) | VS.(xx, th) <- vss})
+    within inter(procSets, varSets)
+
+HideSet(ProgNode.(prog, vars), AllThs, pid) = 
+    let ths = ThSet(prog)
+        vss = VSSet(ProgNode.(prog, vars))
+        varSet = {xx | VS.(xx, _)<-set(vars)}
+        writeAccess = inter(diff(Union({WriteVars(pid,th) | th<-ths}), Union({WriteVars(pid,th) | th<-diff(AllThs, ths)})), varSet)
+        readAccess = inter(diff(Union({ReadVars(pid,th) | th<-ths}), Union({ReadVars(pid,th) | th<-diff(AllThs, ths)})), varSet)
+        writeSets = Union({writeSet(xx) | xx <- writeAccess})
+        readSets = Union({readSet(xx) | xx <- readAccess})
+    within Union({SyncSet'(ProgNode.(prog, vars),pid), writeSets, readSets})
+HideSet(ProgList.progs, AllThs,pid) = 
+    let ths = ThSet(ProgList.progs)
+        vss = VSSet(ProgList.progs)
+        writeAccess = diff(Union({WriteVars(pid,th) | th<-ths}), Union({WriteVars(pid,th) | th<-diff(AllThs, ths)}))
+        readAccess = diff(Union({ReadVars(pid,th) | th<-ths}), Union({ReadVars(pid,th) | th<-diff(AllThs, ths)}))
+        writeSets = Union({writeSet(xx) | xx <- writeAccess})
+        readSets = Union({readSet(xx) | xx <- readAccess})
+        pairs = getAllPairs(progs)
+        pairSyncs = Union({inter(AllowSet(le,pid),AllowSet(ri,pid)) | (le, ri)<-set(pairs)})
+    within diff(Union({writeSets, readSets, pairSyncs}), AllAtomicSet) --?
+
+SyncSet(ProgNode.(prog, vars), AllThs,pid) = 
+    let ths = ThSet(prog)
+        vss = VSSet(ProgNode.(prog, vars))
+        varSet = {xx | VS.(xx, _)<-set(vars)}
+        writeAccess = inter(diff(Union({WriteVars(pid,th) | th<-ths}), Union({WriteVars(pid,th) | th<-diff(AllThs, ths)})), varSet)
+        readAccess = inter(diff(Union({ReadVars(pid,th) | th<-ths}), Union({ReadVars(pid,th) | th<-diff(AllThs, ths)})), varSet)
+        writeSets = Union({writeSet(xx) | xx <- writeAccess})
+        readSets = Union({readSet(xx) | xx <- readAccess})
+        globalVar = {xx | VS.(xx, th)<-set(vars), th==NoTh}
+        AllWrites = Union({WriteVars(pid,th) | th<-AllThs})
+        -- needAtomicSync = not empty(inter(globalVar, AllWrites))
+        -- atomicEvt = if needAtomicSync then AtomicSet(ths) else {}
+        atomicEvt = if globalVar=={} then {} else AtomicSet(ths)
+    within Union({SyncSet'(ProgNode.(prog, vars),pid), writeSets, readSets, atomicEvt})
+
+AllowSet(ProgNode.(prog, vars),pid) = 
+    let ths = ThSet(prog)
+        vss = VSSet(ProgNode.(prog, vars))
+        varSet(xx, th) = if th == NoTh then GlbV(xx) else {}
+        procSets = Union({ThreadEvtSet(th) | th <- ths})
+        varSets = Union({varSet(xx, th) | VS.(xx, th) <- vss})
+        procErrs = Union({errSet(th) | th <- ths})
+        varErrs = Union({verrSet(xx) | VS.(xx, th) <- vss})
+        lockEvts = {|Lock.th | th<-ths|}
+        sigSets = Union({sigSet(pid,th) | th<-ths})
+    within Union({procSets, varSets, procErrs, varErrs, AllAtomicSet, lockEvts, sigSets})
+AllowSet(ProgList.xs,pid) = Union({AllowSet(xx,pid) | xx<-set(xs)})
+
+
+ID(xx) = xx
+
+
+ProgramRun(ProgList.progs, AllThs, isTop,pid) = 
+    let func = if isTop then ID else compress
+        hideSet = HideSet(ProgList.progs, AllThs, pid)
+        subProg = (|| prog : set(progs) @ [AllowSet(prog,pid)] ProgramRun(prog, AllThs, false,pid)) \ hideSet
+    within func(subProg)
+ProgramRun(ProgNode.(prog, vars), AllThs, isTop,pid) = 
+    let subProg = ProgramRun(prog, AllThs, false,pid)
+        syncSet = SyncSet(ProgNode.(prog, vars), AllThs,pid)
+        hideSet = HideSet(ProgNode.(prog, vars), AllThs,pid)
+        varProc = VarRun(vars, AllThs,pid)
+        func = if isTop then ID else compress
+    within func((subProg [|syncSet|] varProc) \ hideSet)
+ProgramRun(ProgLeaf.(pp, th), AllThs, isTop,pid) = 
+    if CheckLockOrder then (pp [|AllLockEvts|] Lock_Monitor(th, <>)) else pp
+
+
+nth(<xx>^xs,0) = xx
+nth(<xx>^xs,mm) = nth(xs,mm-1)
+
+
+initI(IV.xx) = let (mp, _) = initIMap
+                   xi = <vv | (yy, vv) <- mp, yy==xx>
+                within 
+                    if xi==<> then InitI else head(xi)
+initI(IA.xx.idx) = let (_, mp) = initIMap
+                   xi = <vv | (yy, vv) <- mp, yy==xx>
+                within 
+                    if xi==<> then InitI else nth(head(xi), idx)
+
+initB(BV.xx) = let (mp, _) = initBMap
+                   xi = <vv | (yy, vv) <- mp, yy==xx>
+                within 
+                    if xi==<> then InitB else head(xi)
+initB(BA.xx.idx) = let (_, mp) = initBMap
+                   xi = <vv | (yy, vv) <- mp, yy==xx>
+                within 
+                    if xi==<> then InitB else nth(head(xi), idx)
+initB(LV.xx) = let (mp, _) = initBMap
+                   xi = <vv | (yy, vv) <- mp, yy==xx>
+                within 
+                    if xi==<> then InitB else head(xi)
+initB(LA.xx.idx) = let (_, mp) = initBMap
+                   xi = <vv | (yy, vv) <- mp, yy==xx>
+                within 
+                    if xi==<> then InitB else nth(head(xi), idx)
+
+ctype(IV.xx) = let (mp, _) = ctypeMap
+                   xi = <vv | (yy, vv) <- mp, yy==xx>
+                within 
+                    if xi==<> then dctype else head(xi)
+ctype(IA.xx.idx) = let (_, mp) = ctypeMap
+                   xi = <vv | (yy, vv) <- mp, yy==xx>
+                within 
+                    if xi==<> then dctype else head(xi)
+
+-- LockOrder = <>

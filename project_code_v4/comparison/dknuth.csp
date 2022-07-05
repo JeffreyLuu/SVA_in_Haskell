@@ -1,0 +1,35 @@
+include "refsva.csp"
+
+channel assertionfailed
+channel mutexerror
+Signals = {| assertionfailed, mutexerror|}
+
+ISignals :: {Int=>Event}
+ISignals = Union ({})
+ivnums = {1..3}
+bvnums = {1..1}
+ianums = {1..1}
+banums = {1..1}
+DirtyVars = Union({{BA.1.x | x <- ditype },{IA.1.x | x <- ditype },{IV.2},{IV.1}})
+ctypes = <>
+catypes = <>
+itypes = <>
+init = (<>,<>)
+ParReads = Union({})
+ParWrites = Union({})
+SeqReads = Union({})
+SeqWrites = Union({})
+
+mostprocs = 2
+ext_atomic=false
+MinI = 0
+MaxI = 3
+InitB = false
+InitI = 1
+ditype = {1,2}
+dctype = {MinI..MaxI}
+PP(i) = (Iter.Sq.(Bassign.(BArc.(BA.1,Const.i),True),Sq.(While.(BArc.(BA.1,Const.i),Sq.(Iassign.(IArc.(IA.1,Const.i),Const.1),Sq.(While.(BArc.(BA.1,Const.i),Cond.(CompOp.Eq.IVar.IV.2.Const.i,Bassign.(BArc.(BA.1,Const.i),False),Cond.(CompOp.Eq.IArc.(IA.1,BIOp.Minus.Const.3.Const.i).Const.0,Bassign.(BArc.(BA.1,Const.i),False),Skip))),Sq.(Iassign.(IArc.(IA.1,Const.i),Const.2),Cond.(CompOp.Eq.IArc.(IA.1,BIOp.Minus.Const.3.Const.i).Const.2,Bassign.(BArc.(BA.1,Const.i),True),Skip))))),Sq.(Iassign.(IVar.IV.2,Const.i),Sq.(Iassign.(IVar.IV.3,BIOp.Plus.IVar.IV.3.Const.1),Sq.(Cond.(CompOp.Gt.IVar.IV.3.Const.1,Sig.mutexerror,Skip),Sq.(Iassign.(IVar.IV.3,BIOp.Minus.IVar.IV.3.Const.1),Sq.(Iassign.(IVar.IV.2,BIOp.Minus.Const.3.Const.i),Iassign.(IArc.(IA.1,Const.i),Const.0))))))))
+, (Union({{}}),Union({{}})))
+NoCompress = StructuredCompile(CSNode.<CSLeaf.PP(1),CSLeaf.PP(2)>) ({| c | c <-Union({Signals,ISignals',Errors}) |})
+WideStruct = HierarchCompressedCompile(CSNode.<CSLeaf.PP(1),CSLeaf.PP(2)>) ({| c | c <-Union({Signals,ISignals',Errors}) |})
+assert  STOP [T= WideStruct  

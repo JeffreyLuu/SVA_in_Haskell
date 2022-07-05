@@ -1,0 +1,117 @@
+Fourth year project:
+
+Chapter 1: Introduction
+What is shared-variable program?
+Why is it important to model and verify shared-variable program?
+Introduce existing tools to verify shared-variable program:
+- CSP
+- FDR
+- SVA
+Limitation of SVA:
+simulating instead of translating
+
+Chapter 2: Background
+Explain SVL:
+- summary of different declaration/assertions supported by SVL
+Explain SVA:
+- explain the overall translation strategy
+- explain some of the specific datatypes/evaluation of expression
+- program compilation and compression
+
+Chapter 3: General Implementation
+(highlight what is different from the svacomp)
+Calculate and substitute variables during compilation instead runtime: 
+- evaluation of expression
+- dealing with constructs such as iter/while
+Program compilation:
+- tree structure
+- syntatic analysis and variable allocation strategy
+- calculation of set of events to synchronize on (parallel operator)
+
+Chapter 4: Extensions
+customization: single read vs multiple read of the same variable during the evaluation of one expression
+more constructs like lock/semaphore/monitor for more expressiveness
+- case study: program without lock (busy wait) vs with lock
+
+Chapter 5: Conclusion
+What has been achieved
+Future work
+
+
+TODO:
+for each expression:
+read once vs read multiple time:
+Bill's version:
+number[j] + number[k]:
+if j and k are both 3: number[3] is read twice
+number[j] + number[3]:
+when compiling without running, this cannot know if j == 3, too tedious to expand out
+
+output the list of dirtyvars/other fields
+
+Double write
+and
+atomic
+and
+examples
+
+lock
+monitor
+semaphore
+
+to do:
+CSP helper 
+variable process
+
+VarStruct
+Program
+ProgramRun
+
+
+case study: dining philosophers
+
+performance measure?
+
+process change to 0-based?
+
+
++++
+lock construct
+two evaluation strategy
+indentation
+flexibility for user
+
+---
+refinement (generic)
+macro (one function inside another)
+overseer
+
+svphil
+lock version, compression disabled statistics 0
+
+N=4
+Status: Passed
+Compiled in 0.01s
+Checked in 0.17s
+States: Visited 138 over 14 plys at 802 states/second (20,773 minutes/gigastate)
+Transitions: Visited 367 at 2,134 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+N=5
+Status: Passed
+Compiled in 0.01s
+Checked in 0.17s
+States: Visited 494 over 18 plys at 2,872 states/second (5,803 minutes/gigastate)
+Transitions: Visited 1,655 at 9,622 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 8 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)
+
+N=6
+Status: Passed
+Compiled in 0.02s
+Checked in 0.20s
+States: Visited 1,762 over 22 plys at 8,637 states/second (1,930 minutes/gigastate)
+Transitions: Visited 7,119 at 34,897 transitions/second
+Total Storage: 134 MB cache, 0 B compressed, 0 B raw (0.00), 16 blocks
+Requires 28 bytes per state (28.00 GB per gigastate)

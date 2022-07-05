@@ -1,0 +1,63 @@
+include "Helper.csp"
+
+datatype Var = reading | latest | Writer_wpair | Writer_windex | Writer_inp | Writer_wval | Reader_rpair | Reader_rindex | Reader_outp
+datatype Arr = slot | index
+
+ivnums = {reading, latest, Writer_wpair, Writer_windex, Writer_inp, Writer_wval, Reader_rpair, Reader_rindex, Reader_outp}
+ianums = {slot, index}
+bvnums :: {Var}
+bvnums = {}
+banums :: {Arr}
+banums = {}
+
+DirtyVars = Union({{IA.slot.i| i <-itype(slot)},{IA.index.i| i <-itype(index)},{IV.reading},{IV.latest}})
+
+MinI = 0
+MaxI = 4
+InitI = 0
+ditype = {0,1}
+dctype = {0,1}
+ext_atomic = false
+InitB = false
+
+Writer(th) = let tmpProc_1() = (((((SKIP); ((iveval!th!IV.Writer_inp?Writer_inpVal_1 -> if member(Writer_inpVal_1,ctype(IV.Writer_wval)) then ivwrite!th!IV.Writer_wval!Writer_inpVal_1 -> SKIP else error!th -> STOP); ((iveval!th!IV.reading?readingVal_1 -> if (2) == (0) then error!th -> STOP else if member((1-readingVal_1%2),ctype(IV.Writer_wpair)) then ivwrite!th!IV.Writer_wpair!(1-readingVal_1%2) -> SKIP else error!th -> STOP); ((iveval!th!IV.Writer_wpair?Writer_wpairVal_1 -> if member(Writer_wpairVal_1,itype(index)) then iveval!th!IA.index.Writer_wpairVal_1?indexVal_1 -> if (2) == (0) then error!th -> STOP else if member((1-indexVal_1%2),ctype(IV.Writer_windex)) then ivwrite!th!IV.Writer_windex!(1-indexVal_1%2) -> SKIP else error!th -> STOP else error!th -> STOP); ((iveval!th!IV.Writer_wpair?Writer_wpairVal_2 -> iveval!th!IV.Writer_windex?Writer_windexVal_1 -> iveval!th!IV.Writer_wval?Writer_wvalVal_1 -> if member(2*Writer_wpairVal_2+Writer_windexVal_1,itype(slot)) then if member(Writer_wvalVal_1,ctype(IA.slot.(2*Writer_wpairVal_2+Writer_windexVal_1))) then ivwrite!th!IA.slot.(2*Writer_wpairVal_2+Writer_windexVal_1)!Writer_wvalVal_1 -> ivwrite!th!IA.slot.(2*Writer_wpairVal_2+Writer_windexVal_1)!Writer_wvalVal_1 -> SKIP else error!th -> STOP else error!th -> STOP); ((iveval!th!IV.Writer_wpair?Writer_wpairVal_3 -> iveval!th!IV.Writer_windex?Writer_windexVal_2 -> if member(Writer_wpairVal_3,itype(index)) then if member(Writer_windexVal_2,ctype(IA.index.Writer_wpairVal_3)) then ivwrite!th!IA.index.Writer_wpairVal_3!Writer_windexVal_2 -> ivwrite!th!IA.index.Writer_wpairVal_3!Writer_windexVal_2 -> SKIP else error!th -> STOP else error!th -> STOP); ((iveval!th!IV.Writer_wpair?Writer_wpairVal_4 -> if member(Writer_wpairVal_4,ctype(IV.latest)) then ivwrite!th!IV.latest!Writer_wpairVal_4 -> ivwrite!th!IV.latest!Writer_wpairVal_4 -> SKIP else error!th -> STOP); SKIP)))))))); tmpProc_1())) within tmpProc_1()
+Reader(th) = let tmpProc_1() = (((((SKIP); ((iveval!th!IV.latest?latestVal_1 -> if (2) == (0) then error!th -> STOP else if member((latestVal_1%2),ctype(IV.Reader_rpair)) then ivwrite!th!IV.Reader_rpair!(latestVal_1%2) -> SKIP else error!th -> STOP); ((iveval!th!IV.Reader_rpair?Reader_rpairVal_1 -> if member(Reader_rpairVal_1,ctype(IV.reading)) then ivwrite!th!IV.reading!Reader_rpairVal_1 -> ivwrite!th!IV.reading!Reader_rpairVal_1 -> SKIP else error!th -> STOP); ((iveval!th!IV.Reader_rpair?Reader_rpairVal_2 -> if member(Reader_rpairVal_2,itype(index)) then iveval!th!IA.index.Reader_rpairVal_2?indexVal_1 -> if (2) == (0) then error!th -> STOP else if member((indexVal_1%2),ctype(IV.Reader_rindex)) then ivwrite!th!IV.Reader_rindex!(indexVal_1%2) -> SKIP else error!th -> STOP else error!th -> STOP); ((iveval!th!IV.Reader_rpair?Reader_rpairVal_3 -> iveval!th!IV.Reader_rindex?Reader_rindexVal_1 -> if member((2*Reader_rpairVal_3+Reader_rindexVal_1),itype(slot)) then iveval!th!IA.slot.(2*Reader_rpairVal_3+Reader_rindexVal_1)?slotVal_1 -> if member(slotVal_1,ctype(IV.Reader_outp)) then ivwrite!th!IV.Reader_outp!slotVal_1 -> SKIP else error!th -> STOP else error!th -> STOP); ((iveval!th!IV.Reader_outp?Reader_outpVal_1 -> if (Reader_outpVal_1) == (1) then collision -> SKIP else SKIP); SKIP))))))); tmpProc_1())) within tmpProc_1()
+
+assert STOP [T= WideStruct
+
+channel collision
+
+sigSet(2) = {|collision|}
+sigSet(1) = {||}
+SyncOn(5) = inter(ThreadEvtSet(2),Union({LocV(IV.Reader_rpair, 2), LocV(IV.Reader_rindex, 2), LocV(IV.Reader_outp, 2)}))
+SyncOn(4) = Union({inter(Allow(5),Union({GlbV(IV.reading)})), writeSet(IV.reading)})
+SyncOn(3) = inter(ThreadEvtSet(1),Union({LocV(IV.Writer_wpair, 1), LocV(IV.Writer_windex, 1), LocV(IV.Writer_inp, 1), LocV(IV.Writer_wval, 1)}))
+SyncOn(2) = Union({inter(Allow(3),Union({GlbV(IA.slot.1), GlbV(IA.slot.2), GlbV(IA.slot.3), GlbV(IA.slot.0), GlbV(IA.index.0), GlbV(IA.index.1), GlbV(IV.latest)})), writeSet(IA.slot.1), writeSet(IA.slot.2), writeSet(IA.slot.3), writeSet(IA.slot.0), writeSet(IA.index.0), writeSet(IA.index.1), writeSet(IV.latest)})
+SyncOn(1) = Union({SyncOn(4), SyncOn(2)})
+
+
+Allow(5) = Union({ThreadEvtSet(2),Union({LocV(IV.Reader_rpair, 2), LocV(IV.Reader_rindex, 2), LocV(IV.Reader_outp, 2)}),Union({sigSet(i) | i <-{2}}),Union({errSet(i) | i <-{2}})})
+Allow(4) = Union({Allow(5),Union({GlbV(IV.reading)})})
+Allow(3) = Union({ThreadEvtSet(1),Union({LocV(IV.Writer_wpair, 1), LocV(IV.Writer_windex, 1), LocV(IV.Writer_inp, 1), LocV(IV.Writer_wval, 1)}),Union({sigSet(i) | i <-{1}}),Union({errSet(i) | i <-{1}})})
+Allow(2) = Union({Allow(3),Union({GlbV(IA.slot.1), GlbV(IA.slot.2), GlbV(IA.slot.3), GlbV(IA.slot.0), GlbV(IA.index.0), GlbV(IA.index.1), GlbV(IV.latest)})})
+Allow(1) = Union({Allow(4), Allow(2)})
+
+
+Prog(5) = compress((Reader(2)[|SyncOn(5)|](IV_Chan(IV.Reader_rpair, initI(IV.Reader_rpair), YesTh.2)|||IV_Chan(IV.Reader_rindex, initI(IV.Reader_rindex), YesTh.2)|||IV_Chan(IV.Reader_outp, initI(IV.Reader_outp), YesTh.2))) \ SyncOn(5))
+Prog(4) = compress((Prog(5)[|SyncOn(4)|](IV_Chan(IV.reading, initI(IV.reading), NoTh))) \ SyncOn(4))
+Prog(3) = compress((Writer(1)[|SyncOn(3)|](IV_Chan(IV.Writer_wpair, initI(IV.Writer_wpair), YesTh.1)|||IV_Chan(IV.Writer_windex, initI(IV.Writer_windex), YesTh.1)|||IV_Chan(IV.Writer_inp, initI(IV.Writer_inp), YesTh.1)|||IV_Chan(IV.Writer_wval, initI(IV.Writer_wval), YesTh.1))) \ SyncOn(3))
+Prog(2) = compress((Prog(3)[|SyncOn(2)|](IV_Chan(IA.slot.1, initI(IA.slot.1), NoTh)|||IV_Chan(IA.slot.2, initI(IA.slot.2), NoTh)|||IV_Chan(IA.slot.3, initI(IA.slot.3), NoTh)|||IV_Chan(IA.slot.0, initI(IA.slot.0), NoTh)|||IV_Chan(IA.index.0, initI(IA.index.0), NoTh)|||IV_Chan(IA.index.1, initI(IA.index.1), NoTh)|||IV_Chan(IV.latest, initI(IV.latest), NoTh))) \ SyncOn(2))
+Prog(1) = ((|| i: {4,2} @ [Allow(i)] Prog(i)) \ chans)
+
+
+WideStruct = Prog(1)
+
+Signals = {|collision|}
+
+mostproc = 2
+
+itype(slot) = {0..3}
+itype(_) = ditype
+ctype(_) = dctype
+initI(_) = InitI
+initB(_) = InitB

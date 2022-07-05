@@ -1,0 +1,466 @@
+include "Helper.csp"
+
+datatype Var = PP_j | PP_temp
+datatype Arr = number | choosing
+
+ivnums = {PP_j, PP_temp}
+ianums = {number}
+bvnums :: {Var}
+bvnums = {}
+banums = {choosing}
+
+ext_atomic = false
+MinI = 0
+MaxI = 10
+InitB = false
+InitI = MinI
+ditype = {1..N}
+dctype = {MinI..MaxI}
+N = 3
+SPEC = css?i->cse!i->SPEC
+
+datatype LockVar = lock1 
+datatype LockArr = lock2
+LockOrder = <LV.lock1, LA.lock2.1, LA.lock2.2, LA.lock2.3>
+
+
+PP(i,th) = (
+  let tmpProc_6() = (
+    ((SKIP) ;
+    -- (if member(i,itype(lock2)) then Lock!th!LA.lock2.i!lock -> SKIP else error!th -> STOP) ;
+    -- (if member(i,itype(lock2)) then Lock!th!LA.lock2.((i-3)%3+1)!lock -> SKIP else error!th -> STOP) ;
+    -- (if member(i,itype(lock2)) then Lock!th!LA.lock2.i!unlock -> SKIP else error!th -> STOP) ;
+    -- (if member(i,itype(lock2)) then Lock!th!LA.lock2.((i-3)%3+1)!unlock -> SKIP else error!th -> STOP) ;
+    -- (Lock!th!LV.lock1!lock -> SKIP) ;
+    -- (Lock!th!LV.lock1!unlock -> SKIP) ;
+    (if member(i,itype(choosing)) then bvwrite!th!BA.choosing.i!true -> SKIP else error!th -> STOP) ;
+    (if member(0,ctype(IV.PP_temp)) then ivwrite!th!IV.PP_temp!0 -> SKIP else error!th -> STOP) ;
+    (if member(1,ctype(IV.PP_j)) then ivwrite!th!IV.PP_j!1 -> SKIP else error!th -> STOP) ;
+    (let tmpProc_1() = (
+      iveval!th!IV.PP_j?PP_jVal_1 -> (
+        if (PP_jVal_1) <= (N)
+        then (
+          ((iveval!th!IV.PP_temp?PP_tempVal_1 -> iveval!th!IV.PP_j?PP_jVal_2 -> (
+            if member(PP_jVal_2,itype(number))
+            then (
+              iveval!th!IA.number.PP_jVal_2?numberVal_1 -> (
+                if member((max(PP_tempVal_1, numberVal_1)),ctype(IV.PP_temp)) then ivwrite!th!IV.PP_temp!(max(PP_tempVal_1, numberVal_1)) -> SKIP else error!th -> STOP
+              )
+            ) else error!th -> STOP
+          ) );
+          iveval!th!IV.PP_j?PP_jVal_3 -> (
+            if member((PP_jVal_3+1),ctype(IV.PP_j)) then ivwrite!th!IV.PP_j!(PP_jVal_3+1) -> SKIP else error!th -> STOP
+          ) );
+          tmpProc_1()
+        ) else SKIP
+      )
+    ) within tmpProc_1() );
+    (iveval!th!IV.PP_temp?PP_tempVal_2 -> (
+      if member(i,itype(number)) then if member((PP_tempVal_2+1),ctype(IA.number.i)) then ivwrite!th!IA.number.i!(PP_tempVal_2+1) -> SKIP else error!th -> STOP else error!th -> STOP
+    ) );
+    (if member(i,itype(choosing)) then bvwrite!th!BA.choosing.i!false -> SKIP else error!th -> STOP) ;
+    (if member(1,ctype(IV.PP_j)) then ivwrite!th!IV.PP_j!1 -> SKIP else error!th -> STOP) ;
+    (let tmpProc_2() = (
+      iveval!th!IV.PP_j?PP_jVal_4 -> (
+        if (PP_jVal_4) <= (N)
+        then (
+          ((let tmpProc_3() = (
+            iveval!th!IV.PP_j?PP_jVal_5 -> (
+              if member(PP_jVal_5,itype(choosing))
+              then (
+                bveval!th!BA.choosing.PP_jVal_5?choosingVal_1 -> (
+                  if choosingVal_1
+                  then (
+                    (SKIP) ;
+                    tmpProc_3()
+                  ) else SKIP
+                )
+              ) else error!th -> STOP
+            )
+          ) within tmpProc_3() );
+          (iveval!th!IV.PP_j?PP_jVal_6 -> (
+            if (PP_jVal_6) >= (i)
+            then (
+              let tmpProc_4() = (
+                iveval!th!IV.PP_j?PP_jVal_7 -> (
+                  if member(PP_jVal_7,itype(number))
+                  then (
+                    iveval!th!IA.number.PP_jVal_7?numberVal_2 -> (
+                      if member(i,itype(number))
+                      then (
+                        iveval!th!IA.number.i?numberVal_3 -> (
+                          if (numberVal_2) > (0)and(numberVal_2) < (numberVal_3)
+                          then (
+                            (SKIP) ;
+                            tmpProc_4()
+                          ) else SKIP
+                        )
+                      ) else error!th -> STOP
+                    )
+                  ) else error!th -> STOP
+                )
+              ) within tmpProc_4()
+            )
+            else (
+              let tmpProc_5() = (
+                iveval!th!IV.PP_j?PP_jVal_8 -> (
+                  if member(PP_jVal_8,itype(number))
+                  then (
+                    iveval!th!IA.number.PP_jVal_8?numberVal_4 -> (
+                      if member(i,itype(number))
+                      then (
+                        iveval!th!IA.number.i?numberVal_5 -> (
+                          if (numberVal_4) > (0)and(numberVal_4) <= (numberVal_5)
+                          then (
+                            (SKIP) ;
+                            tmpProc_5()
+                          ) else SKIP
+                        )
+                      ) else error!th -> STOP
+                    )
+                  ) else error!th -> STOP
+                )
+              ) within tmpProc_5()
+            )
+          ) );
+          (iveval!th!IV.PP_j?PP_jVal_9 -> (
+            if member((PP_jVal_9+1),ctype(IV.PP_j)) then ivwrite!th!IV.PP_j!(PP_jVal_9+1) -> SKIP else error!th -> STOP
+          ) );
+          SKIP );
+          tmpProc_2()
+        ) else SKIP
+      )
+    ) within tmpProc_2() );
+    (css!i -> SKIP) ;
+    (cse!i -> SKIP) ;
+    (if member(i,itype(number)) then if member(0,ctype(IA.number.i)) then ivwrite!th!IA.number.i!0 -> SKIP else error!th -> STOP else error!th -> STOP) ;
+    SKIP );
+    tmpProc_6()
+  ) within tmpProc_6()
+)
+
+
+QQ(i,th) = (
+  let tmpProc_6() = (
+    ((SKIP) ;
+    (if member(i,itype(choosing)) then bvwrite!th!BA.choosing.i!true -> SKIP else error!th -> STOP) ;
+    (if member(0,ctype(IV.PP_temp)) then ivwrite!th!IV.PP_temp!0 -> SKIP else error!th -> STOP) ;
+    (if member(1,ctype(IV.PP_j)) then ivwrite!th!IV.PP_j!1 -> SKIP else error!th -> STOP) ;
+    (let tmpProc_1() = (
+      iveval!th!IV.PP_j?PP_jVal_1 -> (
+        if (PP_jVal_1) <= (N)
+        then (
+          ((iveval!th!IV.PP_temp?PP_tempVal_1 -> iveval!th!IV.PP_j?PP_jVal_2 -> (
+            if member(PP_jVal_2,itype(number))
+            then (
+              iveval!th!IA.number.PP_jVal_2?numberVal_1 -> (
+                if member((max(PP_tempVal_1, numberVal_1)),ctype(IV.PP_temp)) then ivwrite!th!IV.PP_temp!(max(PP_tempVal_1, numberVal_1)) -> SKIP else error!th -> STOP
+              )
+            ) else error!th -> STOP
+          ) );
+          iveval!th!IV.PP_j?PP_jVal_3 -> (
+            if member((PP_jVal_3+1),ctype(IV.PP_j)) then ivwrite!th!IV.PP_j!(PP_jVal_3+1) -> SKIP else error!th -> STOP
+          ) );
+          tmpProc_1()
+        ) else SKIP
+      )
+    ) within tmpProc_1() );
+    (iveval!th!IV.PP_temp?PP_tempVal_2 -> (
+      if member(i,itype(number)) then if member((PP_tempVal_2+1),ctype(IA.number.i)) then ivwrite!th!IA.number.i!(PP_tempVal_2+1) -> SKIP else error!th -> STOP else error!th -> STOP
+    ) );
+    (if member(i,itype(choosing)) then bvwrite!th!BA.choosing.i!false -> SKIP else error!th -> STOP) ;
+    (if member(1,ctype(IV.PP_j)) then ivwrite!th!IV.PP_j!1 -> SKIP else error!th -> STOP) ;
+    (let tmpProc_2() = (
+      iveval!th!IV.PP_j?PP_jVal_4 -> (
+        if (PP_jVal_4) <= (N)
+        then (
+          ((let tmpProc_3() = (
+            iveval!th!IV.PP_j?PP_jVal_5 -> (
+              if member(PP_jVal_5,itype(choosing))
+              then (
+                bveval!th!BA.choosing.PP_jVal_5?choosingVal_1 -> (
+                  if choosingVal_1
+                  then (
+                    (SKIP) ;
+                    tmpProc_3()
+                  ) else SKIP
+                )
+              ) else error!th -> STOP
+            )
+          ) within tmpProc_3() );
+          (iveval!th!IV.PP_j?PP_jVal_6 -> (
+            if (PP_jVal_6) >= (i)
+            then (
+              let tmpProc_4() = (
+                iveval!th!IV.PP_j?PP_jVal_7 -> (
+                  if member(PP_jVal_7,itype(number))
+                  then (
+                    iveval!th!IA.number.PP_jVal_7?numberVal_2 -> (
+                      if member(i,itype(number))
+                      then (
+                        iveval!th!IA.number.i?numberVal_3 -> (
+                          if (numberVal_2) > (0)and(numberVal_2) < (numberVal_3)
+                          then (
+                            (SKIP) ;
+                            tmpProc_4()
+                          ) else SKIP
+                        )
+                      ) else error!th -> STOP
+                    )
+                  ) else error!th -> STOP
+                )
+              ) within tmpProc_4()
+            )
+            else (
+              let tmpProc_5() = (
+                iveval!th!IV.PP_j?PP_jVal_8 -> (
+                  if member(PP_jVal_8,itype(number))
+                  then (
+                    iveval!th!IA.number.PP_jVal_8?numberVal_4 -> (
+                      if member(i,itype(number))
+                      then (
+                        iveval!th!IA.number.i?numberVal_5 -> (
+                          if (numberVal_4) > (0)and(numberVal_4) <= (numberVal_5)
+                          then (
+                            (SKIP) ;
+                            tmpProc_5()
+                          ) else SKIP
+                        )
+                      ) else error!th -> STOP
+                    )
+                  ) else error!th -> STOP
+                )
+              ) within tmpProc_5()
+            )
+          ) );
+          (iveval!th!IV.PP_j?PP_jVal_9 -> (
+            if member((PP_jVal_9+1),ctype(IV.PP_j)) then ivwrite!th!IV.PP_j!(PP_jVal_9+1) -> SKIP else error!th -> STOP
+          ) );
+          SKIP );
+          tmpProc_2()
+        ) else SKIP
+      )
+    ) within tmpProc_2() );
+    (css!i -> SKIP) ;
+    (cse!i -> SKIP) ;
+    (if member(i,itype(number)) then if member(0,ctype(IA.number.i)) then ivwrite!th!IA.number.i!0 -> SKIP else error!th -> STOP else error!th -> STOP) ;
+    SKIP );
+    tmpProc_6()
+  ) within tmpProc_6()
+)
+
+
+
+channel css : AllInts
+channel cse : AllInts
+
+sigSet(3) = {|css.3,cse.3|}
+sigSet(2) = {|css.2,cse.2|}
+sigSet(1) = {|css.1,cse.1|}
+
+
+-- SyncOn(7) = inter(ThreadEvtSet(3),Union({LocV(IV.PP_j, 3), LocV(IV.PP_temp, 3)}))
+-- SyncOn(6) = Union({inter(Allow(7),Union({GlbV(BA.choosing.3), GlbV(IA.number.3)})), writeSet(BA.choosing.3), writeSet(IA.number.3)})
+-- SyncOn(5) = inter(ThreadEvtSet(2),Union({LocV(IV.PP_j, 2), LocV(IV.PP_temp, 2)}))
+-- SyncOn(4) = Union({inter(Allow(5),Union({GlbV(BA.choosing.2), GlbV(IA.number.2)})), writeSet(BA.choosing.2), writeSet(IA.number.2)})
+-- SyncOn(3) = inter(ThreadEvtSet(1),Union({LocV(IV.PP_j, 1), LocV(IV.PP_temp, 1)}))
+-- SyncOn(2) = Union({inter(Allow(3),Union({GlbV(BA.choosing.1), GlbV(IA.number.1)})), writeSet(BA.choosing.1), writeSet(IA.number.1)})
+-- SyncOn(1) = Union({SyncOn(6), SyncOn(4), SyncOn(2)})
+
+
+-- Allow(7) = Union({ThreadEvtSet(3),Union({LocV(IV.PP_j, 3), LocV(IV.PP_temp, 3)}),Union({sigSet(i) | i <-{3}}),Union({errSet(i) | i <-{3}})})
+-- Allow(6) = Union({Allow(7),Union({GlbV(BA.choosing.3), GlbV(IA.number.3)}), AllAtomicSet})
+-- Allow(5) = Union({ThreadEvtSet(2),Union({LocV(IV.PP_j, 2), LocV(IV.PP_temp, 2)}),Union({sigSet(i) | i <-{2}}),Union({errSet(i) | i <-{2}})})
+-- Allow(4) = Union({Allow(5),Union({GlbV(BA.choosing.2), GlbV(IA.number.2)}), AllAtomicSet})
+-- Allow(3) = Union({ThreadEvtSet(1),Union({LocV(IV.PP_j, 1), LocV(IV.PP_temp, 1)}),Union({sigSet(i) | i <-{1}}),Union({errSet(i) | i <-{1}})})
+-- Allow(2) = Union({Allow(3),Union({GlbV(BA.choosing.1), GlbV(IA.number.1)}), AllAtomicSet})
+-- Allow(1) = Union({Allow(6), Allow(4), Allow(2)})
+
+
+-- Prog(7) = compress((PP(3, 3) [| union(SyncOn(7), {}) |] VarInterleave(<VarProc(IV.PP_j, YesTh.3), VarProc(IV.PP_temp, YesTh.3)>) ) \ SyncOn(7))
+-- Prog(6) = compress((Prog(7) [| union(SyncOn(6), AtomicSet({3})) |] VarInterleave(<VarProc(BA.choosing.3, NoTh), VarProc(IA.number.3, NoTh)>) ) \ SyncOn(6))
+-- Prog(5) = compress((PP(2, 2) [| union(SyncOn(5), {}) |] VarInterleave(<VarProc(IV.PP_j, YesTh.2), VarProc(IV.PP_temp, YesTh.2)>) ) \ SyncOn(5))
+-- Prog(4) = compress((Prog(5) [| union(SyncOn(4), AtomicSet({2})) |] VarInterleave(<VarProc(BA.choosing.2, NoTh), VarProc(IA.number.2, NoTh)>) ) \ SyncOn(4))
+-- Prog(3) = compress((PP(1 ,1) [| union(SyncOn(3), {}) |] VarInterleave(<VarProc(IV.PP_j, YesTh.1), VarProc(IV.PP_temp, YesTh.1)>) ) \ SyncOn(3))
+-- Prog(2) = compress((Prog(3) [| union(SyncOn(2), AtomicSet({1})) |] VarInterleave(<VarProc(BA.choosing.1, NoTh), VarProc(IA.number.1, NoTh)>) ) \ SyncOn(2))
+-- Prog(1) = ((|| i: {6,4,2} @ [Allow(i)] Prog(i)) \ chans)
+
+-- WideStruct = Prog(1) \ AllAtomicSet
+
+-- Allow(7) = Union({ThreadEvtSet(3),Union({LocV(IV.PP_j, 3), LocV(IV.PP_temp, 3)}),Union({sigSet(i) | i <-{3}}),Union({errSet(i) | i <-{3}}), {|Lock.3|}})
+-- Allow(6) = Union({Allow(7),Union({GlbV(BA.choosing.3), GlbV(IA.number.3)}), AllAtomicSet, {|Lock.3|}, {|Lock.j.v | j <- Thread, v <- {LV.lock1, LA.lock2.3}|}})
+-- Allow(5) = Union({ThreadEvtSet(2),Union({LocV(IV.PP_j, 2), LocV(IV.PP_temp, 2)}),Union({sigSet(i) | i <-{2}}),Union({errSet(i) | i <-{2}}), {|Lock.2|}})
+-- Allow(4) = Union({Allow(5),Union({GlbV(BA.choosing.2), GlbV(IA.number.2)}), AllAtomicSet, {|Lock.2|}, {|Lock.j.v | j <- Thread, v <- {LA.lock2.2}|}})
+-- Allow(3) = Union({ThreadEvtSet(1),Union({LocV(IV.PP_j, 1), LocV(IV.PP_temp, 1)}),Union({sigSet(i) | i <-{1}}),Union({errSet(i) | i <-{1}}), {|Lock.1|}})
+-- Allow(2) = Union({Allow(3),Union({GlbV(BA.choosing.1), GlbV(IA.number.1)}), AllAtomicSet, {|Lock.1|}, {|Lock.j.v | j <- Thread, v <- {LA.lock2.1}|}})
+-- Allow(1) = Union({Allow(6), Allow(4), Allow(2)})
+
+-- Prog(7) = compress((PP(3, 3) [| union(SyncOn(7), {|Lock.3.v | v <- {LV.lock1, LA.lock2.3}|}) |] ((Lock_Chan(LV.lock1, false) ||| Lock_Chan(LA.lock2.3, false)) ||| VarInterleave(<VarProc(IV.PP_j, YesTh.3), VarProc(IV.PP_temp, YesTh.3)>)) ) \ SyncOn(7))
+-- Prog(6) = compress((Prog(7) [| union(SyncOn(6), AtomicSet({3})) |] VarInterleave(<VarProc(BA.choosing.3, NoTh), VarProc(IA.number.3, NoTh)>) ) \ SyncOn(6))
+-- Prog(5) = compress((PP(2, 2) [| union(SyncOn(5), {|Lock.2.LA.lock2.2|}) |] ( Lock_Chan(LA.lock2.2, false) ||| VarInterleave(<VarProc(IV.PP_j, YesTh.2), VarProc(IV.PP_temp, YesTh.2)>)) ) \ SyncOn(5))
+-- Prog(4) = compress((Prog(5) [| union(SyncOn(4), AtomicSet({2})) |] VarInterleave(<VarProc(BA.choosing.2, NoTh), VarProc(IA.number.2, NoTh)>) ) \ SyncOn(4))
+-- Prog(3) = compress((PP(1 ,1) [| union(SyncOn(3), {|Lock.1.LA.lock2.1|}) |] ( Lock_Chan(LA.lock2.1, false) ||| VarInterleave(<VarProc(IV.PP_j, YesTh.1), VarProc(IV.PP_temp, YesTh.1)>)) ) \ SyncOn(3))
+-- Prog(2) = compress((Prog(3) [| union(SyncOn(2), AtomicSet({1})) |] VarInterleave(<VarProc(BA.choosing.1, NoTh), VarProc(IA.number.1, NoTh)>) ) \ SyncOn(2))
+-- Prog(1) = (((|| i: {6,4,2} @ [Allow(i)] Prog(i)) ) \ chans)
+
+SyncOn(7) = inter(ThreadEvtSet(3),Union({LocV(IV.PP_j, 3), LocV(IV.PP_temp, 3)}))
+SyncOn(6) = Union({inter(Allow(7),Union({GlbV(BA.choosing.3), GlbV(IA.number.3)})), writeSet(BA.choosing.3), writeSet(IA.number.3)})
+SyncOn(5) = inter(ThreadEvtSet(2),Union({LocV(IV.PP_j, 2), LocV(IV.PP_temp, 2)}))
+SyncOn(4) = Union({inter(Allow(5),Union({GlbV(BA.choosing.2), GlbV(IA.number.2)})), writeSet(BA.choosing.2), writeSet(IA.number.2)})
+SyncOn(3) = inter(ThreadEvtSet(1),Union({LocV(IV.PP_j, 1), LocV(IV.PP_temp, 1)}))
+SyncOn(2) = Union({inter(Allow(3),Union({GlbV(BA.choosing.1), GlbV(IA.number.1)})), writeSet(BA.choosing.1), writeSet(IA.number.1)})
+SyncOn(1) = Union({SyncOn(6), SyncOn(4), SyncOn(2)})
+
+
+Allow(7) = Union({ThreadEvtSet(3),Union({LocV(IV.PP_j, 3), LocV(IV.PP_temp, 3)}),Union({sigSet(i) | i <-{3}}),Union({errSet(i) | i <-{3}}), {|Lock.3|}})
+Allow(6) = Union({Allow(7),Union({GlbV(BA.choosing.3), GlbV(IA.number.3)}), AllAtomicSet })
+Allow(5) = Union({ThreadEvtSet(2),Union({LocV(IV.PP_j, 2), LocV(IV.PP_temp, 2)}),Union({sigSet(i) | i <-{2}}),Union({errSet(i) | i <-{2}}), {|Lock.2|}})
+Allow(4) = Union({Allow(5),Union({GlbV(BA.choosing.2), GlbV(IA.number.2)}), AllAtomicSet })
+Allow(3) = Union({ThreadEvtSet(1),Union({LocV(IV.PP_j, 1), LocV(IV.PP_temp, 1)}),Union({sigSet(i) | i <-{1}}),Union({errSet(i) | i <-{1}}), {|Lock.1|}})
+Allow(2) = Union({Allow(3),Union({GlbV(BA.choosing.1), GlbV(IA.number.1)}), AllAtomicSet })
+Allow(1) = Union({Allow(6), Allow(4), Allow(2)})
+
+
+Prog(7) = compress((PP(3, 3) [| union(SyncOn(7), {}) |] VarInterleave(<VarProc(IV.PP_j, YesTh.3), VarProc(IV.PP_temp, YesTh.3)>) ) \ SyncOn(7))
+Prog(6) = compress((Prog(7) [| union(SyncOn(6), AtomicSet({3})) |] VarInterleave(<VarProc(BA.choosing.3, NoTh), VarProc(IA.number.3, NoTh)>) ) \ SyncOn(6))
+Prog(5) = compress((PP(2, 2) [| union(SyncOn(5), {}) |] VarInterleave(<VarProc(IV.PP_j, YesTh.2), VarProc(IV.PP_temp, YesTh.2)>) ) \ SyncOn(5))
+Prog(4) = compress((Prog(5) [| union(SyncOn(4), AtomicSet({2})) |] VarInterleave(<VarProc(BA.choosing.2, NoTh), VarProc(IA.number.2, NoTh)>) ) \ SyncOn(4))
+Prog(3) = compress((PP(1 ,1) [| union(SyncOn(3), {}) |] VarInterleave(<VarProc(IV.PP_j, YesTh.1), VarProc(IV.PP_temp, YesTh.1)>) ) \ SyncOn(3))
+Prog(2) = compress((Prog(3) [| union(SyncOn(2), AtomicSet({1})) |] VarInterleave(<VarProc(BA.choosing.1, NoTh), VarProc(IA.number.1, NoTh)>) ) \ SyncOn(2))
+Prog(1) = (((|| i: {6,4,2} @ [Allow(i)] Prog(i)) [|AllLockEvts|] Lock_Chans))
+
+datatype VarStruct = VS.(namestype, Thread')
+
+datatype Program = ProgList.Seq(Program) | ProgNode.(Program, Seq(VarStruct)) | ProgLeaf.(Proc, Thread)
+
+ReadVars(3) = {BA.choosing.1,BA.choosing.2,BA.choosing.3,IA.number.1,IA.number.2,IA.number.3,IA.number.3}
+ReadVars(2) = {BA.choosing.1,BA.choosing.2,BA.choosing.3,IA.number.1,IA.number.2,IA.number.3,IA.number.2}
+ReadVars(1) = {BA.choosing.1,BA.choosing.2,BA.choosing.3,IA.number.1,IA.number.2,IA.number.3,IA.number.1}
+
+WriteVars(3) = {BA.choosing.3,IA.number.3}
+WriteVars(2) = {BA.choosing.2,IA.number.2}
+WriteVars(1) = {BA.choosing.1,IA.number.1}
+
+WideStruct_sub(<>) = ProgList.(<WideStruct_sub(<1>),WideStruct_sub(<2>),WideStruct_sub(<3>)>)
+WideStruct_sub(<1>) = ProgNode.(WideStruct_sub(<1,1>),<VS.(BA.choosing.3,NoTh),VS.(IA.number.3,NoTh)>)
+WideStruct_sub(<1,1>) = ProgNode.(ProgLeaf.(PP(3, 3),3),<VS.(IV.PP_j,YesTh.3),VS.(IV.PP_temp,YesTh.3)>)
+WideStruct_sub(<2>) = ProgNode.(WideStruct_sub(<2,1>),<VS.(BA.choosing.2,NoTh),VS.(IA.number.2,NoTh)>)
+WideStruct_sub(<2,1>) = ProgNode.(ProgLeaf.(PP(2, 2),2),<VS.(IV.PP_j,YesTh.2),VS.(IV.PP_temp,YesTh.2)>)
+WideStruct_sub(<3>) = ProgNode.(WideStruct_sub(<3,1>),<VS.(BA.choosing.1,NoTh),VS.(IA.number.1,NoTh)>)
+WideStruct_sub(<3,1>) = ProgNode.(ProgLeaf.(PP(1, 1),1),<VS.(IV.PP_j,YesTh.1),VS.(IV.PP_temp,YesTh.1)>)
+
+WideStruct2 = (ProgramRun(WideStruct_sub(<>), Thread, True) [|AllLockEvts|] Lock_Chans) \ Union({AllAtomicSet, AllLockEvts, chans})
+
+ThSet(ProgList.xs) = if null(xs) then {} else union(ThSet(head(xs)), ThSet(ProgList.(tail(xs))))
+ThSet(ProgNode.(x,ys)) = ThSet(x)
+ThSet(ProgLeaf.(_, th)) = {th}
+
+VSSet(ProgList.xs) = if null(xs) then {} else union(VSSet(head(xs)),VSSet(ProgList.(tail(xs))))
+VSSet(ProgNode.(x,ys)) = union(VSSet(x),set(ys))
+VSSet(ProgLeaf.(_)) = {}
+
+SyncSet'(ProgNode.(prog, vars)) = 
+    let ths = ThSet(prog)
+        vss = VSSet(ProgNode.(prog, vars))
+        varSet(xx, th) = if th == NoTh then GlbV(xx) else LocV(xx, getThId(th))
+        procSets = Union({ThreadEvtSet(th) | th <- ths})
+        varSets = Union({varSet(xx, th) | VS.(xx, th) <- vss})
+    within inter(procSets, varSets)
+
+HideSet(ProgNode.(prog, vars), AllThs) = 
+    let ths = ThSet(prog)
+        vss = VSSet(ProgNode.(prog, vars))
+        varSet = {xx | VS.(xx, _)<-set(vars)}
+        writeAccess = inter(diff(Union({WriteVars(th) | th<-ths}), Union({WriteVars(th) | th<-diff(AllThs, ths)})), varSet)
+        readAccess = inter(diff(Union({ReadVars(th) | th<-ths}), Union({ReadVars(th) | th<-diff(AllThs, ths)})), varSet)
+        writeSets = Union({writeSet(xx) | xx <- writeAccess})
+        readSets = Union({readSet(xx) | xx <- readAccess})
+    within Union({SyncSet'(ProgNode.(prog, vars)), writeSets, readSets})
+HideSet(ProgList.progs, AllThs) = 
+    let ths = ThSet(ProgList.progs)
+        vss = VSSet(ProgList.progs)
+        writeAccess = diff(Union({WriteVars(th) | th<-ths}), Union({WriteVars(th) | th<-diff(AllThs, ths)}))
+        readAccess = diff(Union({ReadVars(th) | th<-ths}), Union({ReadVars(th) | th<-diff(AllThs, ths)}))
+        writeSets = Union({writeSet(xx) | xx <- writeAccess})
+        readSets = Union({readSet(xx) | xx <- readAccess})
+    within Union({writeSets, readSets}) --?
+
+SyncSet(ProgNode.(prog, vars), AllThs) = 
+    let ths = ThSet(prog)
+        vss = VSSet(ProgNode.(prog, vars))
+        varSet = {xx | VS.(xx, _)<-set(vars)}
+        writeAccess = inter(diff(Union({WriteVars(th) | th<-ths}), Union({WriteVars(th) | th<-diff(AllThs, ths)})), varSet)
+        readAccess = inter(diff(Union({ReadVars(th) | th<-ths}), Union({ReadVars(th) | th<-diff(AllThs, ths)})), varSet)
+        writeSets = Union({writeSet(xx) | xx <- writeAccess})
+        readSets = Union({readSet(xx) | xx <- readAccess})
+        globalVar = {xx | VS.(xx, th)<-set(vars), th==NoTh}
+        AllWrites = Union({WriteVars(th) | th<-AllThs})
+        -- needAtomicSync = not empty(inter(globalVar, AllWrites))
+        -- atomicEvt = if needAtomicSync then AtomicSet(ths) else {}
+        atomicEvt = AtomicSet(ths)
+    within Union({SyncSet'(ProgNode.(prog, vars)), writeSets, readSets, atomicEvt})
+
+AllowSet(ProgNode.(prog, vars)) = 
+    let ths = ThSet(prog)
+        vss = VSSet(ProgNode.(prog, vars))
+        varSet(xx, th) = if th == NoTh then GlbV(xx) else {}
+        procSets = Union({ThreadEvtSet(th) | th <- ths})
+        varSets = Union({varSet(xx, th) | VS.(xx, th) <- vss})
+        procErrs = Union({errSet(th) | th <- ths})
+        varErrs = Union({verrSet(xx) | VS.(xx, th) <- vss})
+        lockEvts = {|Lock.th | th<-ths|}
+        sigSets = Union({sigSet(th) | th<-ths})
+    within Union({procSets, varSets, procErrs, varErrs, AllAtomicSet, lockEvts, sigSets})
+AllowSet(ProgList.xs) = Union({AllowSet(x) | x<-set(xs)})
+
+VarRun(<>, AllThs) = AtomicDummy
+-- VarRun(<xx>, AllThs) = VarProc'(xx)
+VarRun(<var>^vars, AllThs) = 
+    let AllWrites = Union({WriteVars(th) | th<-AllThs})
+        isLocal = {th | VS.(xx,th)<-{var}} != {NoTh}
+        tailRun = VarRun(vars, AllThs)
+        xx = head(<xx | VS.(xx,th)<-<var> >)
+        needAtomic = member(xx, AllWrites) and (not isLocal)
+    within if needAtomic then VarProc'(var, needAtomic) [|AllAtomicSet|] tailRun else VarProc'(var, needAtomic) ||| tailRun
+
+ID(x) = x
+
+ProgramRun(ProgList.progs, AllThs, isTop) = 
+    let func = if isTop then ID else compress
+        subProg = || prog : set(progs) @ [AllowSet(prog)] ProgramRun(prog, AllThs, false)
+    within func(subProg)
+ProgramRun(ProgNode.(prog, vars), AllThs, isTop) = 
+    let subProg = ProgramRun(prog, AllThs, false)
+        syncSet = SyncSet(ProgNode.(prog, vars), AllThs)
+        hideSet = HideSet(ProgNode.(prog, vars), AllThs)
+        varProc = VarRun(vars, AllThs)
+        func = if isTop then ID else compress
+    within func((subProg [|syncSet|] varProc) \ hideSet)
+ProgramRun(ProgLeaf.(p, th), AllThs, isTop) = 
+    let func = if isTop then ID else compress
+    within func(p)
+
+    
+
+WideStruct = Prog(1) \ Union({AllAtomicSet, AllLockEvts, chans})
+
+assert STOP [T= WideStruct \{|css,cse|}
+assert SPEC [T= WideStruct \ Errors
+assert WideStruct \ Errors :[ deadlock free [F] ]
+
+assert STOP [T= WideStruct2 \{|css,cse|}
+assert SPEC [T= WideStruct2 \ Errors
+assert WideStruct2 \ Errors :[ deadlock free [F] ]
+
+Signals = {|css,cse|}
+
+mostproc = 3
+
+itype(_) = ditype
+ctype(_) = dctype
+initI(_) = InitI
+initB(_) = InitB
+
+-- DirtyVars = union({IV.reading, IV.latest}, {IA.v.i | v <- {slot, index}, i <- itype(v)})
+DirtyVars = {}
+-- DirtyVars = Union({{BA.choosing.i| i <-itype(choosing)}})

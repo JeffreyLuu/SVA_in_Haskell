@@ -1,0 +1,204 @@
+include "Helper2.csp"
+
+datatype Var = Dummy
+datatype Arr = fork
+
+ivnums :: {Var}
+ivnums = {}
+ianums :: {Arr}
+ianums = {}
+bvnums :: {Var}
+bvnums = {}
+banums :: {Arr}
+banums = {}
+lvnums :: {Var}
+lvnums = {}
+lanums = {fork}
+
+DirtyVars = Union({})
+
+
+itype(_) = ditype
+
+ctypeMap = (<>,<>)
+initIMap = (<>,<>)
+initBMap = (<>,<>)
+
+MinI = 0
+MaxI = 4
+InitI = 0
+ditype = {0,1,2,3}
+dctype = {1,2}
+N = 4
+ext_atomic = false
+InitB = false
+LockOrder = <LA.fork.1, LA.fork.2, LA.fork.3, LA.fork.0>
+LockOrder = <LA.fork.1, LA.fork.0, LA.fork.3, LA.fork.2>
+
+CheckLockOrder = true
+SymPhils = false
+Eaten(n) = if n == 0 then STOP else eats?i-> if i == n-1 then Eaten(n-1) else Eaten(n)
+
+needVarAt = false
+
+Phil(i,th) = (
+  let tmpProc_1() = (
+    (if ((((i) == (0))) and ((not(SymPhils))))
+    then (
+      (if member((i+1)%N,itype(fork)) then Lock!th!LA.fork.((i+1)%N)!lock -> SKIP else error!th -> STOP) ;
+      (if member(i,itype(fork)) then Lock!th!LA.fork.i!lock -> SKIP else error!th -> STOP) ;
+      (eats!i -> SKIP) ;
+      (if member((i+1)%N,itype(fork)) then Lock!th!LA.fork.((i+1)%N)!unlock -> SKIP else error!th -> STOP) ;
+      (if member(i,itype(fork)) then Lock!th!LA.fork.i!unlock -> SKIP else error!th -> STOP) ;
+      SKIP
+    )
+    else (
+      (if member(i,itype(fork)) then Lock!th!LA.fork.i!lock -> SKIP else error!th -> STOP) ;
+      (if member((i+1)%N,itype(fork)) then Lock!th!LA.fork.((i+1)%N)!lock -> SKIP else error!th -> STOP) ;
+      (eats!i -> SKIP) ;
+      (if member((i+1)%N,itype(fork)) then Lock!th!LA.fork.((i+1)%N)!unlock -> SKIP else error!th -> STOP) ;
+      (if member(i,itype(fork)) then Lock!th!LA.fork.i!unlock -> SKIP else error!th -> STOP) ;
+      SKIP
+    ) );
+    tmpProc_1()
+  ) within tmpProc_1()
+)
+
+channel eats : AllInts
+channel lget : AllInts
+channel rget : AllInts
+channel lput : AllInts
+channel rput : AllInts
+Signals = {| eats,lget,rget,lput,rput |}
+
+mostproc = 4
+
+
+sigSet(1,1) = {|eats.0,eats.0|}
+sigSet(1,2) = {|eats.1,eats.1|}
+sigSet(1,3) = {|eats.2,eats.2|}
+sigSet(1,4) = {|eats.3,eats.3|}
+sigSet(2,1) = {|eats.0,eats.0|}
+sigSet(2,2) = {|eats.1,eats.1|}
+sigSet(2,3) = {|eats.2,eats.2|}
+sigSet(2,4) = {|eats.3,eats.3|}
+sigSet(3,1) = {|eats.0,eats.0|}
+sigSet(3,2) = {|eats.1,eats.1|}
+sigSet(3,3) = {|eats.2,eats.2|}
+sigSet(3,4) = {|eats.3,eats.3|}
+
+ReadVars(1,1) = {}
+ReadVars(1,2) = {}
+ReadVars(1,3) = {}
+ReadVars(1,4) = {}
+ReadVars(2,1) = {}
+ReadVars(2,2) = {}
+ReadVars(2,3) = {}
+ReadVars(2,4) = {}
+ReadVars(3,1) = {}
+ReadVars(3,2) = {}
+ReadVars(3,3) = {}
+ReadVars(3,4) = {}
+
+WriteVars(1,1) = {}
+WriteVars(1,2) = {}
+WriteVars(1,3) = {}
+WriteVars(1,4) = {}
+WriteVars(2,1) = {}
+WriteVars(2,2) = {}
+WriteVars(2,3) = {}
+WriteVars(2,4) = {}
+WriteVars(3,1) = {}
+WriteVars(3,2) = {}
+WriteVars(3,3) = {}
+WriteVars(3,4) = {}
+
+System_sub(<>) = ProgList.(<System_sub(<1>),System_sub(<2>),System_sub(<3>),System_sub(<4>)>)
+System_sub(<1>) = ProgNode.(System_sub(<1,1>),<>)
+System_sub(<1,1>) = ProgNode.(ProgLeaf.(Phil(0, 1),1),<>)
+System_sub(<2>) = ProgNode.(System_sub(<2,1>),<>)
+System_sub(<2,1>) = ProgNode.(ProgLeaf.(Phil(1, 2),2),<>)
+System_sub(<3>) = ProgNode.(System_sub(<3,1>),<>)
+System_sub(<3,1>) = ProgNode.(ProgLeaf.(Phil(2, 3),3),<>)
+System_sub(<4>) = ProgNode.(System_sub(<4,1>),<>)
+System_sub(<4,1>) = ProgNode.(ProgLeaf.(Phil(3, 4),4),<>)
+
+System = (ProgramRun(System_sub(<>), Thread, True, 1) [|AllLockEvts|] Lock_Chans) \ Union({AllAtomicSet, AllLockEvts, chans})
+
+Balanced_sub(<>) = ProgList.(<Balanced_sub(<1>),Balanced_sub(<2>)>)
+Balanced_sub(<1>) = ProgList.(<Balanced_sub(<1,1>),Balanced_sub(<1,2>)>)
+Balanced_sub(<1,1>) = ProgNode.(Balanced_sub(<1,1,1>),<>)
+Balanced_sub(<1,1,1>) = ProgNode.(ProgLeaf.(Phil(0, 1),1),<>)
+Balanced_sub(<1,2>) = ProgNode.(Balanced_sub(<1,2,1>),<>)
+Balanced_sub(<1,2,1>) = ProgNode.(ProgLeaf.(Phil(1, 2),2),<>)
+Balanced_sub(<2>) = ProgList.(<Balanced_sub(<2,1>),Balanced_sub(<2,2>)>)
+Balanced_sub(<2,1>) = ProgNode.(Balanced_sub(<2,1,1>),<>)
+Balanced_sub(<2,1,1>) = ProgNode.(ProgLeaf.(Phil(2, 3),3),<>)
+Balanced_sub(<2,2>) = ProgNode.(Balanced_sub(<2,2,1>),<>)
+Balanced_sub(<2,2,1>) = ProgNode.(ProgLeaf.(Phil(3, 4),4),<>)
+
+Balanced = (ProgramRun(Balanced_sub(<>), Thread, True, 2) [|AllLockEvts|] Lock_Chans) \ Union({AllAtomicSet, AllLockEvts, chans})
+
+LongTree_sub(<>) = ProgList.(<LongTree_sub(<1>),LongTree_sub(<2>)>)
+LongTree_sub(<1>) = ProgNode.(LongTree_sub(<1,1>),<>)
+LongTree_sub(<1,1>) = ProgNode.(ProgLeaf.(Phil(0, 1),1),<>)
+LongTree_sub(<2>) = ProgList.(<LongTree_sub(<2,1>),LongTree_sub(<2,2>)>)
+LongTree_sub(<2,1>) = ProgNode.(LongTree_sub(<2,1,1>),<>)
+LongTree_sub(<2,1,1>) = ProgNode.(ProgLeaf.(Phil(1, 2),2),<>)
+LongTree_sub(<2,2>) = ProgList.(<LongTree_sub(<2,2,1>),LongTree_sub(<2,2,2>)>)
+LongTree_sub(<2,2,1>) = ProgNode.(LongTree_sub(<2,2,1,1>),<>)
+LongTree_sub(<2,2,1,1>) = ProgNode.(ProgLeaf.(Phil(2, 3),3),<>)
+LongTree_sub(<2,2,2>) = ProgList.(<LongTree_sub(<2,2,2,1>)>)
+LongTree_sub(<2,2,2,1>) = ProgNode.(LongTree_sub(<2,2,2,1,1>),<>)
+LongTree_sub(<2,2,2,1,1>) = ProgNode.(ProgLeaf.(Phil(3, 4),4),<>)
+
+LongTree = (ProgramRun(LongTree_sub(<>), Thread, True, 3) [|AllLockEvts|] Lock_Chans) \ Union({AllAtomicSet, AllLockEvts, chans})
+
+assert STOP [T= System \ Signals
+assert STOP [T= Balanced \ Signals
+assert STOP [T= LongTree \ Signals
+assert Eaten(N) [T= System 
+assert Eaten(N) [T= Balanced 
+assert Eaten(N) [T= LongTree 
+
+
+channel tau,switch,succ
+
+
+AlwaysR(P,a) = let Sigma = diff(Events,{switch,tau,succ})
+                   Reg = [] x:Sigma @ x -> Reg
+                         [] switch -> Ph2
+                   Ph2 = succ -> Ph2 
+               within
+                   compress((P[|union({tau},Sigma)|] Reg)\{|tau|})[[succ <- a]]
+
+-- The above process allows P to perform any trace at all, after which
+-- the event switch causes it to stop, and Ph2 introduces an infinite trace
+-- of the event a.
+
+-- The process below also allows P to perform any trace followed by
+-- switch, but this time P is allowed to carry on with all events other than
+-- a hidden.  Thus this process can only perform an infinite trace of a's after
+-- switch if there is a trace of P beyond this point with an infinite number
+-- of a's in it.
+
+AlwaysL(P,a) = let Sigma = diff(Events,{switch,tau,succ,a})
+                   DP = P[[x <- tau, x <- x | x <- Sigma]]
+                   Reg = [] x:Sigma @ x -> Reg
+                         [] switch -> Ph2
+                   Ph2 = tau -> Ph2 
+               within
+                   ((DP[|union({tau},Sigma)|] Reg)\{|tau|})
+
+-- Thus, for a P, 
+
+-- AlwaysL(P,a) [T= AlwaysR(P,a)
+
+-- if and only if P satisfies "after every trace s the event a is reachable"
+-- Note that this is not exactly the same as saying that after every STATE
+-- a is reachable, but that cannot be expressed in CSP models.
+
+assert AlwaysL(System,eats.0) [T= AlwaysR(System,eats.0)
+assert AlwaysL(Balanced,eats.0) [T= AlwaysR(Balanced,eats.0)
+assert AlwaysL(LongTree,eats.0) [T= AlwaysR(LongTree,eats.0)
+

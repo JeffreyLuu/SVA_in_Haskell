@@ -1,0 +1,53 @@
+include "refsva.csp"
+
+channel assertionfailed
+channel cse : {MinI..MaxI}
+channel css : {MinI..MaxI}
+Signals = {| assertionfailed, cse, css|}
+
+ISignals :: {Int=>Event}
+ISignals = Union ({})
+ivnums = {1..8}
+bvnums = {1..4}
+ianums = {1..2}
+banums = {1..0}
+DirtyVars = Union({})
+ctypes = <>
+catypes = <>
+itypes = <>
+init = (<>,<>)
+LocalBVarMapping_Thread_lb(0) = BV.1
+LocalBVarMapping_Thread_lb(1) = BV.2
+LocalBVarMapping_Thread_lb(2) = BV.3
+LocalBVarMapping_Thread_lb(3) = BV.4
+LocalIVarMapping_Thread_j(0) = IV.1
+LocalIVarMapping_Thread_j(1) = IV.3
+LocalIVarMapping_Thread_j(2) = IV.5
+LocalIVarMapping_Thread_j(3) = IV.7
+LocalIVarMapping_Thread_k(0) = IV.2
+LocalIVarMapping_Thread_k(1) = IV.4
+LocalIVarMapping_Thread_k(2) = IV.6
+LocalIVarMapping_Thread_k(3) = IV.8
+N = 5
+ParReads = Union({})
+ParWrites = Union({})
+SeqReads = Union({})
+SeqWrites = Union({})
+
+mostprocs = 4
+ext_atomic=false
+MinI = 0
+MaxI = 5   -- must equal N
+InitB = false
+InitI = 0
+ditype = {0..MaxI-1}
+dctype = {0..MaxI}
+LockOrder = <>
+CheckLockOrder = false
+SPEC = css?i -> cse!i -> SPEC
+Thread(i) = (Iter.Sq.(Iassign.(IVar.LocalIVarMapping_Thread_j(i),Const.1),Sq.(While.(CompOp.Lt.IVar.LocalIVarMapping_Thread_j(i).Const.N,Sq.(Iassign.(IArc.(IA.1,Const.i),IVar.LocalIVarMapping_Thread_j(i)),Sq.(Iassign.(IArc.(IA.2,IVar.LocalIVarMapping_Thread_j(i)),Const.i),Sq.(Bassign.(BVar.LocalBVarMapping_Thread_lb(i),True),Sq.(Iassign.(IVar.LocalIVarMapping_Thread_k(i),Const.0),Sq.(While.(CompOp.Lt.IVar.LocalIVarMapping_Thread_k(i).Const.N,Sq.(Cond.(BBOp.And.BVar.LocalBVarMapping_Thread_lb(i).CompOp.Neq.IVar.LocalIVarMapping_Thread_k(i).Const.i,While.(BBOp.And.BVar.LocalBVarMapping_Thread_lb(i).CompOp.Ge.IArc.(IA.1,IVar.LocalIVarMapping_Thread_k(i)).IArc.(IA.1,Const.i),Bassign.(BVar.LocalBVarMapping_Thread_lb(i),CompOp.Eq.IArc.(IA.2,IVar.LocalIVarMapping_Thread_j(i)).Const.i)),Skip),Iassign.(IVar.LocalIVarMapping_Thread_k(i),BIOp.Plus.IVar.LocalIVarMapping_Thread_k(i).Const.1))),Iassign.(IVar.LocalIVarMapping_Thread_j(i),BIOp.Plus.IVar.LocalIVarMapping_Thread_j(i).Const.1))))))),Sq.(Sig.css.i,Sq.(Sig.cse.i,Iassign.(IArc.(IA.1,Const.i),Const.0)))))
+, (Union({{IVar.LocalIVarMapping_Thread_j(i),IVar.LocalIVarMapping_Thread_k(i)}}),Union({{BVar.LocalBVarMapping_Thread_lb(i)}})))
+PairStruct = HierarchCompressedCompile(CSNode.<CSNode.<CSLeaf.Thread(0),CSLeaf.Thread(1)>,CSNode.<CSLeaf.Thread(2),CSLeaf.Thread(3)>>) ({| c | c <-Union({Signals,ISignals',Errors}) |})
+WideStruct = HierarchCompressedCompile(CSNode.<CSLeaf.Thread(0),CSLeaf.Thread(1),CSLeaf.Thread(2),CSLeaf.Thread(3)>) ({| c | c <-Union({Signals,ISignals',Errors}) |})
+assert  SPEC [T= WideStruct 
+assert  SPEC [T= PairStruct 

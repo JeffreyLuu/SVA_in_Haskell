@@ -1,0 +1,160 @@
+transparent sbisim, diamond, normal, wbisim
+sbdia(P) = sbisim(diamond(P))
+compress = sbdia
+
+
+datatype namestype = IV.Var | IA.Arr.Int
+                   | BV.Var | BA.Arr.Int | NonVar
+
+ivnames = union({IV.v | v <- ivnums}, {IA.a.j | a <- ianums, j <- itype(a)})
+bvnames = union({BV.v | v <- bvnums}, {BA.a.j | a <- banums, j <- itype(a)})
+
+channel bveval,bvwrite: Thread.bvnames.Bool
+channel iveval,ivwrite: Thread.ivnames.AllInts
+
+Thread = {1..mostproc}
+
+chans = {|bveval, bvwrite, iveval,ivwrite|}
+
+filterByFst(th) = {|bveval.th, bvwrite.th, iveval.th, ivwrite.th|}
+ThreadEvtSet(th) = filterByFst(th)
+
+IV_Chan(xx, v, th) = let Dirty(j) = iveval?_!xx?_ -> Dirty(j) [] ivwrite?jj!xx?_ -> (if j==jj then SKIP else verror.xx -> STOP) within
+                        if th == NoTh then iveval?_!xx!v -> IV_Chan(xx, v, th) [] ivwrite?j!xx?w -> if member(xx, DirtyVars) then (Dirty(j); IV_Chan(xx, w, th)) else IV_Chan(xx, w, th)
+                            else iveval!getThId(th)!xx!v -> IV_Chan(xx, v, th) [] ivwrite!getThId(th)!xx?w -> IV_Chan(xx, w, th)
+                            
+
+BV_Chan(xx, v, th) = let Dirty(j) = bveval?_!xx?_ -> Dirty(j) [] bvwrite?jj!xx?_ -> (if j==jj then SKIP else verror.xx -> STOP) within
+                        if th == NoTh then bveval?_!xx!v -> BV_Chan(xx, v, th) [] bvwrite?j!xx?w -> if member(xx, DirtyVars) then (Dirty(j); BV_Chan(xx, w, th)) else BV_Chan(xx, w, th)
+                            else bveval!getThId(th)!xx!v -> BV_Chan(xx, v, th) [] bvwrite!getThId(th)!xx?w -> BV_Chan(xx, w, th)
+
+BVAR_at(x,v) =
+           let Dirty(i) = bveval?_!x?_ -> Dirty(i)
+                        [] bvwrite?j!x?_ -> (if i==j then SKIP
+                                                     else verror.x -> STOP)
+                        [] start_at?j ->  Dirty_at(i,j)
+               Dirty_at(i,j) = end_at.j -> Dirty(i)
+                               [] bveval.j!x?_
+                                               -> Dirty_at(i,j)
+                               [] bvwrite.j!x?_
+                                               -> verror.x -> STOP
+            within
+            bveval?_!x!v -> BVAR_at(x,v)
+         [] bvwrite?jj!x?w ->(if member(x,DirtyVars) then Dirty(jj);BVAR_at(x,w)
+                              else BVAR_at(x,w))
+         [] start_at?j -> BVAR_inat(j,x,v)
+
+IVAR_at(x,v) =
+          let
+          t = ctype(x)
+              Dirty(i) = iveval?_!x?y:t -> Dirty(i)
+                      [] ivwrite?j!x?_ -> (if i==j then SKIP
+                                                          else verror.x -> STOP)
+                      [] start_at?j ->  Dirty_at(i,j)
+              Dirty_at(i,j) = end_at.j -> Dirty(i)
+                              [] iveval.j!x?_ ->
+                                                     Dirty_at(i,j)
+                              [] ivwrite.j!x?_ ->
+                                                     verror.x -> STOP
+          within
+            iveval?_!x!v -> IVAR_at(x,v)
+         [] ivwrite?jj!x?w ->
+              (if member(x,DirtyVars) then Dirty(jj);IVAR_at(x,w)
+                                      else IVAR_at(x,w))
+
+         [] start_at?j -> IVAR_inat(j,x,v)
+
+BVAR_inat(j,x,v) =
+            bveval.j!x!v -> BVAR_inat(j,x,v)
+         [] (bvwrite.j!x?w -> if member(x,DirtyVars) then bvwrite.j.x?_ -> BVAR_inat(j,x,w)
+                             else BVAR_inat(j,x,w))
+         [] end_at.j -> BVAR_at(x,v)
+
+IVAR_inat(j,x,v) =
+            iveval.j!x!v -> IVAR_inat(j,x,v)
+         [] (ivwrite.j!x?w -> if member(x,DirtyVars) then ivwrite.j.x?_ -> IVAR_inat(j,x,w)
+                                 else IVAR_inat(j,x,w))
+         [] end_at.j -> IVAR_at(x,v)
+
+
+max(c, d) = if c >= d then c else d
+min(c, d) = if c <= d then c else d
+
+datatype LockEvt = lock | unlock
+datatype locktype = LV.LockVar | LA.LockArr.Int
+
+lnames = union({LV.xx | xx <- LockVar}, {LA.xx.j | xx <- LockArr, j <- itype(xx)})
+
+channel Lock:Thread.lnames.LockEvt
+
+Lock_Chan(name, false) = Lock?_!name.lock -> Lock_Chan(name, true)
+Lock_Chan(name, true) = Lock?_!name.unlock -> Lock_Chan(name, false)
+-- the user needs to specify a total order for locks (default total order if not provided)
+-- and a boolean to decide whether to check the total order is valid
+
+AllLockEvts = {|Lock|}
+
+-- for each individual processor, it has an monitor, which checks the locks available 
+Lock_Monitor(th, currs) =   let valid_lock(locks) = if null(currs) then set(locks) else valid_lock'(locks)
+                                valid_lock'(locks) = if head(currs)==head(locks) then set(tail(locks)) else valid_lock'(tail(locks))
+                                remove_lock(locks, to_remove) = <x | x <- locks, x!=to_remove>
+                            within Lock.th?xx:valid_lock(LockOrder)!lock -> Lock_Monitor(th, <xx>^currs) [] Lock.th?xx:set(currs)!unlock -> Lock_Monitor(th, remove_lock(currs, xx))
+
+Lock_Chans = ||| xx: lnames @ Lock_Chan(xx, initB(xx))
+
+datatype Thread' = YesTh.{0..mostproc} | NoTh
+getThId(YesTh.k) = k
+
+channel error:pnums
+channel verror:union(ivnames,bvnames)
+
+Errors = {|error,verror|}
+
+errSet(i) = {error.i}
+verrSet(xx) = {verror.xx}
+
+LocV(xx, th) = if member(xx, ivnames) then {|iveval.th.xx, ivwrite.th.xx|}
+            else if member(xx, bvnames) then {|bveval.th.xx, bvwrite.th.xx|}
+            else {}
+
+GlbV(xx) = if member(xx, ivnames) then {|iveval.th.xx, ivwrite.th.xx | th <- Thread |}
+            else if member(xx, bvnames) then {|bveval.th.xx, bvwrite.th.xx | th <- Thread |}
+            else {}
+
+
+writeSet(var) = if member(var, ivnames) then {|ivwrite.j.var | j <- Thread|}
+                else if member(var, bvnames) then {|bvwrite.j.var | j <- Thread|}
+                else {}
+
+readSet(var) = if member(var, ivnames) then {|iveval.j.var | j <- Thread|}
+                else if member(var, bvnames) then {|bveval.j.var | j <- Thread|}
+                else {}
+
+
+pnums =  {1..mostproc} 
+pnums' = { -1..mostproc-1}
+pnums'' = if ext_atomic then pnums' else pnums
+
+AllInts = {MinI..MaxI}
+
+channel start_at, end_at:Thread
+
+AtomicDummy = start_at?_ -> AtomicDummy [] end_at?_ -> AtomicDummy
+
+VarInterleave(<x>) = x
+VarInterleave(<x>^xs) = x [| AllAtomicSet|] VarInterleave(xs)
+
+VarProc(xx, th) = if member(xx, ivnames) then if th == NoTh then IVAR_at(xx, initI(xx)) else IV_Chan(xx, initI(xx), th) 
+                  else if member(xx, bvnames) then if th == NoTh then BVAR_at(xx, initB(xx)) else BV_Chan(xx, initB(xx), th)
+                  else STOP
+
+VarProc'(VS.(xx, th), bool) = if member(xx, ivnames) then if bool then IVAR_at(xx, initI(xx)) else IV_Chan(xx, initI(xx), th) 
+                  else if member(xx, bvnames) then if bool then BVAR_at(xx, initB(xx)) else BV_Chan(xx, initB(xx), th)
+                  else STOP
+
+AtomicSet(ths) = {start_at.th, end_at.th | th <- ths}
+AllAtomicSet = {|start_at,end_at|}
+
+
+nth(<x>^xs,0) = x
+nth(<x>^xs,m) = nth(xs,m-1)
