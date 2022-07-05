@@ -10,35 +10,35 @@ import Control.Exception
 import System.IO
 import System.IO.Error
 
-inputFileName = "../../../sva2/svaexamples/bakery1/bakery.svl"
--- inputFileName = "../../../sva2/svaexamples/bakery1/bakerysimp.svl"
--- inputFileName = "../../../sva2/svaexamples/bakery1/bakerysimp2.svl" -- does not support calling another thread in one thread
+inputFileName = "svaexamples/bakery1/bakery.svl"
+-- inputFileName = "svaexamples/bakery1/bakerysimp.svl"
+-- inputFileName = "svaexamples/bakery1/bakerysimp2.svl" -- does not support calling another thread in one thread
 
--- inputFileName = "../../../sva2/svaexamples/bakery2/bakery2.svl" -- longer compilation time for D
--- inputFileName = "../../../sva2/svaexamples/bakery2/bakery3.svl" 
--- inputFileName = "../../../sva2/svaexamples/bakery2/bakerysimp2.svl" -- longer compilation time for D
+-- inputFileName = "svaexamples/bakery2/bakery2.svl" -- longer compilation time for D
+-- inputFileName = "svaexamples/bakery2/bakery3.svl" 
+-- inputFileName = "svaexamples/bakery2/bakerysimp2.svl" -- longer compilation time for D
 
--- inputFileName = "../../../sva2/svaexamples/dirty/dbakery.svl"
--- inputFileName = "../../../sva2/svaexamples/dirty/dbakerysimp.svl"
--- inputFileName = "../../../sva2/svaexamples/dirty/ddekker.svl" 
--- inputFileName = "../../../sva2/svaexamples/dirty/dknuth.svl" 
--- inputFileName = "../../../sva2/svaexamples/dirty/dpeterson.svl"
+-- inputFileName = "svaexamples/dirty/dbakery.svl"
+-- inputFileName = "svaexamples/dirty/dbakerysimp.svl"
+-- inputFileName = "svaexamples/dirty/ddekker.svl" 
+-- inputFileName = "svaexamples/dirty/dknuth.svl" 
+-- inputFileName = "svaexamples/dirty/dpeterson.svl"
 
--- inputFileName = "../../../sva2/svaexamples/mutex/dekker.svl" -- more states
--- inputFileName = "../../../sva2/svaexamples/mutex/hyman.svl" -- more states
--- inputFileName = "../../../sva2/svaexamples/mutex/knuth.svl" -- fewer states
--- inputFileName = "../../../sva2/svaexamples/mutex/knuthtest.svl" -- does not support calling another thread in one thread
--- inputFileName = "../../../sva2/svaexamples/mutex/peterson.svl"
--- inputFileName = "../../../sva2/svaexamples/mutex/petersonN.svl" -- too long to compile for both
+-- inputFileName = "svaexamples/mutex/dekker.svl" -- more states
+-- inputFileName = "svaexamples/mutex/hyman.svl" -- more states
+-- inputFileName = "svaexamples/mutex/knuth.svl" -- fewer states
+-- inputFileName = "svaexamples/mutex/knuthtest.svl" -- does not support calling another thread in one thread
+-- inputFileName = "svaexamples/mutex/peterson.svl"
+-- inputFileName = "svaexamples/mutex/petersonN.svl" -- too long to compile for both
 
 -- slightly more states/transitions for all cases (5% more states)
--- inputFileName = "../../../sva2/svaexamples/simpson/simpson.svl"
--- inputFileName = "../../../sva2/svaexamples/simpson/simpson2.svl"
--- inputFileName = "../../../sva2/svaexamples/simpson/simpson3.svl"
--- inputFileName = "../../../sva2/svaexamples/simpson/simpson4.svl"
--- inputFileName = "../../../sva2/svaexamples/simpson/simpson5.svl"
+-- inputFileName = "svaexamples/simpson/simpson.svl"
+-- inputFileName = "svaexamples/simpson/simpson2.svl"
+-- inputFileName = "svaexamples/simpson/simpson3.svl"
+-- inputFileName = "svaexamples/simpson/simpson4.svl"
+-- inputFileName = "svaexamples/simpson/simpson5.svl"
 
--- inputFileName = "../../../sva2/svaexamples/svdphils/sphils2.svl" -- kind of cheating, use only much fewer states
+-- inputFileName = "svaexamples/svdphils/sphils2.svl" -- kind of cheating, use only much fewer states
 
 
 main :: IO()
